@@ -15,14 +15,36 @@
 #### Step 3 - Create a new conda environment and install the requirements
 - `pip install  -r requirements.txt`
 
-## Preprocess
-#### Extract image features
-TODO
+#### Step 4 - Extract question features
+`./scripts/preprocess/preprocess_questions.sh`
 
-#### Extract question features
-- `./scripts/preprocess/preprocess_questions.sh`
+#### Step 5 - Extract image features
 
-#### Training and Testing
+#### Step 6 - Train
+Run the following command (check `scripts/demo/updn.sh`):
+
+`python run_network.py --data_root ${DATA_ROOT} --expt_name UpDn --model UpDn --h5_prefix all`
+
+
+If image features are in separate files per split (e.g., train.hdf5, val.hdf5, test.hdf5)
+
+`python run_network.py --data_root ${DATA_ROOT} --expt_name UpDn --model UpDn --h5_prefix use_split`
+
+##### To resume
+
+- To resume from checkpoint of same experiment
+
+`python run_network.py --data_root ${DATA_ROOT} --expt_name UpDn --model UpDn --h5_prefix all --resume --resume_expt_name UpDn`
+
+- To resume from checkpoint of a different experiment
+
+`python run_network.py --data_root ${DATA_ROOT} --expt_name UpDn --model UpDn --h5_prefix all --resume --resume_expt_name DifferentUpDn`
+
+##### Conventions
 To track all of the experiments properly, let us follow this convention/structure:
-1. For each new "group of experiments" (e.g., trying to find the best optimizer), create a directory inside `scripts` directory
-2. Create a new script with a unique name e.g. `scripts/optim/adam.sh` and when training, pass in the same name in `--expt_name` parameter (more details below)  
+- For each new "group of experiments" (e.g., trying to find the best optimizer), create a directory inside `scripts` directory
+- Create a new script with a unique name e.g. `scripts/optim/adam.sh` and when training, pass in the same name in `--expt_name` parameter (more details below)
+
+  
+#### Step 7 - Test
+TODO
