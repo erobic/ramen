@@ -13,25 +13,6 @@ py_version = sys.version_info[0 ]
 def load_json(json_preds, gt_ann_a, answerkey):
     preds_json = json.load(open(json_preds))
     return preds_json
-    # return preds_to_answer_ixs(preds_json, gt_ann_a, answerkey)
-
-#
-# def preds_to_answer_ixs(preds_json, gt_ann_a, answerkey):
-#     lut_preds = dict()
-#     for pred in preds_json:
-#         lut_preds[pred['question_id']] = pred['answer']
-#     predictions = []
-#     for idx, ans in enumerate(gt_ann_a):
-#         if idx % 1000 == 0:
-#             sys.stdout.write('\rAligning.. ' + str(idx))
-#             sys.stdout.flush()
-#         try:
-#             predictions.append(lut_preds[ans['question_id']])
-#         except:
-#             print("THIS SHOULD NOT HAPPEN")
-#     predictions = [int(answerkey[p]) for p in predictions]
-#     return predictions
-
 
 def tdiuc_mean_per_class(predictions, gt_ann, answerkey, convert_preds=True):
     return mean_per_class(predictions, gt_ann, answerkey, convert_preds)

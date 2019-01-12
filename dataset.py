@@ -88,30 +88,19 @@ def _load_dataset(dataroot, name, img_id2val, label2ans):
     name: 'train', 'val', 'test-dev2015', test2015'
     """
     question_path = os.path.join(
-        dataroot, 'vqa2/%s_questions.json' % (name))
+        dataroot, 'questions/%s_questions.json' % (name))
     questions = json.load(open(question_path))
     if 'questions' in questions:
         questions = questions['questions']
     questions = sorted(questions,
                        key=lambda x: x['question_id'])
     if 'test' not in name and 'test_dev' not in name:
-        #qn_id_to_ans_file = os.path.join(data_root, 'bottom-up-attention', '{}_target_qn_id_to_ans.json'.format(name))
-
-        # if not os.path.exists(qn_id_to_ans_file):
         qn_id_to_ans = {}
-        answer_path = os.path.join(dataroot, 'bottom-up-attention', '%s_target.json' % name)
+        answer_path = os.path.join(dataroot, 'features', '%s_target.json' % name)
         answers = json.load(open(answer_path, 'r'))
         for answer in answers:
             qn_id_to_ans[str(answer['question_id'])] = answer
-        # with open(qn_id_to_ans_file, 'w') as f:
-        #     json.dump(qn_id_to_ans, f)
-        #
-        # with open(qn_id_to_ans_file, 'r') as f:
-        #     qn_id_to_ans = json.load(f)
 
-        # answers = sorted(answers, key=lambda x: x['question_id'])
-
-        #utils.assert_eq(len(questions), len(answers))
         entries = []
         for question in questions:
             answer = qn_id_to_ans[str(question['question_id'])].copy()
@@ -129,7 +118,7 @@ def _load_dataset(dataroot, name, img_id2val, label2ans):
 
 
 class VQAFeatureDataset(Dataset):
-    def __init__(self, name, dictionary, data_root, proj_data_root, adaptive=False, args=None):
+    def __init__(self, name, dictionary, data_root, adaptive=False, args=None):
         super(VQAFeatureDataset, self).__init__()
 
         with open(os.path.join(args.vocab_dir, 'answer_ix_map.json')) as af:
@@ -168,14 +157,14 @@ class VQAFeatureDataset(Dataset):
             args.spatial_feature_length)
         self.s_dim = self.spatials.shape[1 if self.adaptive else 2]
         self.printed = False
-        with open(os.path.join(args.data_root, 'clevr', name + "_questions.json")) as qf:
+        with open(os.path.join(args.data_root, 'questions', name + "_questions.json")) as qf:
             print("Loading questions...")
             qns = json.load(qf)
             if 'questions' in qns:
                 qns = qns['questions']
             self.question_map = {}
             for q in qns:
-                self.question_map[q['question_index']] = q
+                self.question_map[q['question_id']] = q
 
     def tokenize(self, max_length):
         """Tokenizes the questions.
@@ -230,7 +219,7 @@ class VQAFeatureDataset(Dataset):
         question_id = entry['question_id']
         full_question = self.question_map[question_id]
 
-        question_type = VqaUtils.get_question_type(self.args.dataset, full_question)
+        question_type = VqaUtils.get_question_type(full_question)
         answer = entry['answer']
         target = torch.zeros(self.num_ans_candidates)
 
@@ -244,4 +233,4 @@ class VQAFeatureDataset(Dataset):
 
     def __len__(self):
         return len(self.entries)
-        # return 200
+        # return 3000

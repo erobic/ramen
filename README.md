@@ -20,6 +20,9 @@
 TODO
 
 #### Extract question features
-- `./scripts/preprocess_questions.sh`
+- `./scripts/preprocess/preprocess_questions.sh`
 
-## Experiment Naming 
+#### Training and Testing
+To track all of the experiments properly, let us follow this convention/structure:
+1. For each new "group of experiments" (e.g., trying to find the best optimizer), create a directory inside `scripts` directory
+2. Create a new script with a unique name e.g. `scripts/optim/adam.sh` and when training, pass in the same name in `--expt_name` parameter (more details below)  

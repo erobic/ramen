@@ -67,7 +67,7 @@ class VqaUtils:
         return curr_entry
 
     @staticmethod
-    def save_stats(stats, per_type_metrics, all_preds, tdiuc_results, save_dir, split, epoch):
+    def save_stats(stats, per_type_metrics, all_preds, save_dir, split, epoch):
         VqaUtils.save_csv(stats, save_dir, stats_filename='overall_stats.csv')
         VqaUtils.save_csv(per_type_metrics, save_dir, stats_filename='per_type_stats.csv')
         with open(os.path.join(save_dir, 'overall_stats.json'), 'w') as of:
@@ -79,10 +79,6 @@ class VqaUtils:
             os.mkdir(pred_dir)
         with open(os.path.join(pred_dir, 'prediction_{}_epoch_{}.json'.format(split, epoch)), 'w') as pred_f:
             json.dump(all_preds, pred_f)
-
-        if tdiuc_results is not None:
-            with open(os.path.join(pred_dir, 'tdiuc_prediction_{}_epoch_{}.json'.format(split, epoch)), 'w') as tdiuc_f:
-                json.dump(tdiuc_results, tdiuc_f)
 
     @staticmethod
     def save_preds(all_preds, save_dir, split, epoch):
@@ -113,11 +109,13 @@ class VqaUtils:
             return 2 * spatial_feature_length
         elif spatial_feature_type == 'simple':
             return 4
+        else:
+            return 0
 
 
     @staticmethod
-    def get_question_type(dataset, full_question):
-        if 'clevr' in dataset.lower():
+    def get_question_type(full_question, use_clevr_style=False):
+        if use_clevr_style:
             if 'program' in full_question:
                 question_type = full_question['program'][-1]['function']
             else:
@@ -131,15 +129,14 @@ class VqaUtils:
 
 
 class PerTypeMetric:
-    def __init__(self, epoch, dataset):
+    def __init__(self, epoch):
         self.epoch = epoch
-        self.dataset = dataset
         self.per_type_correct = {}
         self.per_type_total = {}
         self.per_type_acc = {}
 
-    def update_with_pred(self, full_question, label, output):
-        if 'clevr' in self.dataset.lower():
+    def update_with_pred(self, full_question, label, output,use_clevr_style):
+        if use_clevr_style:
             question_type = full_question['program'][-1]['function']
         else:
             question_type = full_question['vqa_annotation']['question_type']
@@ -191,10 +188,10 @@ def compute_score_with_logits(logits, labels):
 
 
 def load_answer_scores(dataroot, split):
-    question_path = os.path.join(dataroot, 'vqa2', '%s_questions.json' %split)
+    question_path = os.path.join(dataroot, 'questions', '%s_questions.json' %split)
     questions = sorted(json.load(open(question_path))['questions'], key=lambda x:x['question_id'])
     entries = {}
-    answer_path = os.path.join(dataroot, 'bottom-up-attention', '%s_target.pkl' % split)
+    answer_path = os.path.join(dataroot, 'features', '%s_target.pkl' % split)
     answers = cPickle.load(open(answer_path, 'rb'))
     answers = sorted(answers, key=lambda x: x['question_id'])
 
