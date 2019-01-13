@@ -22,7 +22,7 @@ def parse_args():
     parser.add_argument('--num_hid', type=int, default=1024)
     parser.add_argument('--q_emb_dim', type=int, default=1024)
     parser.add_argument('--model', type=str, default='UpDn')
-    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--seed', type=int, default=1111, help='random seed')
     parser.add_argument('--answers_available', type=int, default=1, help='Are the answers available?')
     parser.add_argument('--mode', type=str, choices=['train', 'test'],
