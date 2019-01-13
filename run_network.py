@@ -66,6 +66,11 @@ def parse_args():
     # BAN specific arguments
     parser.add_argument('--glimpse', type=int, default=8)
 
+    # RN specific arguments
+    parser.add_argument('--interactor_sizes', type=int, nargs='+', default=[512, 512, 512, 512])
+    parser.add_argument('--aggregator_sizes', type=int, nargs='+', default=[512, 512])
+
+
     args = parser.parse_args()
 
     args.dataroot = args.data_root
