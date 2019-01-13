@@ -73,11 +73,6 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
         train_metrics, val_metrics = Metrics(), Metrics()
 
         if not args.test:
-            train_metrics.num_examples = len(train_loader.dataset)
-        else:
-            train_metrics.num_examples = 1
-
-        if not args.test:
             for i, (visual_features, boxes, question_features, answers, question_types, question_ids) in enumerate(
                     train_loader):
                 visual_features = Variable(visual_features.float()).cuda()
@@ -88,11 +83,11 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
                 pred = model(visual_features, boxes, question_features, answers)
                 loss = instance_bce_with_logits(pred, answers)
                 loss.backward()
-                train_metrics.update_per_batch(model, answers, loss, pred, visual_features)
+                train_metrics.update_per_batch(model, answers, loss, pred, visual_features.shape[0])
                 optimizer.step()
                 optimizer.zero_grad()
 
-                if i % 100 == 0:
+                if i % 1000 == 0:
                     train_metrics.print(epoch)
         train_metrics.update_per_epoch()
 
@@ -115,6 +110,7 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
             metrics = accumulate_metrics(epoch, train_metrics, val_metrics, val_per_type_metric,
                                          best_val_score, best_val_epoch,
                                          save_val_metrics)
+
             metrics_stats_list.append(metrics)
 
             # Add metrics + parameters of the model and optimizer
@@ -147,7 +143,7 @@ def evaluate(model, dataloader, epoch, args, val_metrics):
 
         if not args.test or args.test_has_answers:
             loss = instance_bce_with_logits(pred, answers)
-            val_metrics.update_per_batch(model, answers, loss, pred, visual_features)
+            val_metrics.update_per_batch(model, answers, loss, pred, visual_features.shape[0])
 
         pred_ans_ixs = pred.max(1)[1]
 
