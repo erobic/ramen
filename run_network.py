@@ -62,6 +62,10 @@ def parse_args():
     parser.add_argument('--classifier_sizes', type=int, nargs='+', default=[2048])
     parser.add_argument('--classifier_nonlinearity', type=str, default='Swish')
     parser.add_argument('--classifier_dropout', type=float, default=0.5)
+
+    # BAN specific arguments
+    parser.add_argument('--glimpse', type=int, default=8)
+
     args = parser.parse_args()
 
     args.dataroot = args.data_root

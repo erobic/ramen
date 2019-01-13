@@ -3,7 +3,7 @@
 source scripts/common.sh
 cd ${PROJECT_ROOT}
 
-MODEL=Ramen
+MODEL=Ban
 python -u run_network.py \
 --data_root ${DATA_ROOT} \
 --expt_name ${MODEL} \

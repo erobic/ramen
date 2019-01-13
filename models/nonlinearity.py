@@ -16,4 +16,4 @@ class NormalizedSwish(nn.Module):
         super(NormalizedSwish, self).__init__()
 
     def forward(self, x):
-        return 1.78718727865 * (x * F.sigmoid(x) - 0.20662096414)
+        return 1.78718727865 * (x * torch.sigmoid(x) - 0.20662096414)

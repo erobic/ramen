@@ -1,8 +1,16 @@
+"""
+Bottom-up and top-down attention for image captioning and vqa.
+Anderson, Peter, et al.
+http://openaccess.thecvf.com/content_cvpr_2018/CameraReady/1163.pdf
+
+This code is adapted from: https://github.com/hengyuan-hu/bottom-up-attention-vqa
+"""
 import torch.nn as nn
-from models.attention import BaseAttention, UpDnAttention
-from models.language_model import WordEmbedding, UpDnQuestionEmbedding
+
+from models.attention import UpDnAttention
 from models.classifier import SimpleClassifier
 from models.fc import FCNet
+from models.language_model import WordEmbedding, UpDnQuestionEmbedding
 
 
 class UpDn(nn.Module):
