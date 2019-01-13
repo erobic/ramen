@@ -7,10 +7,10 @@ This code is adapted from: https://github.com/hengyuan-hu/bottom-up-attention-vq
 """
 import torch.nn as nn
 
-from models.attention import UpDnAttention
-from models.classifier import SimpleClassifier
-from models.fc import FCNet
-from models.language_model import WordEmbedding, UpDnQuestionEmbedding
+from components.attention import UpDnAttention
+from components.classifier import SimpleClassifier
+from components.fc import FCNet
+from components.language_model import WordEmbedding, UpDnQuestionEmbedding
 
 
 class UpDn(nn.Module):

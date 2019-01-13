@@ -7,11 +7,11 @@ This code is adapted from: https://github.com/jnhwkim/ban-vqa (written by Jin-Hw
 """
 import torch.nn as nn
 
-from models.attention import BiAttention
-from models.classifier import SimpleClassifier
-from models.counting import Counter
-from models.fc import FCNet, BCNet
-from models.language_model import WordEmbedding, UpDnQuestionEmbedding
+from components.attention import BiAttention
+from components.classifier import SimpleClassifier
+from components.counting import Counter
+from components.fc import FCNet, BCNet
+from components.language_model import WordEmbedding, UpDnQuestionEmbedding
 
 
 class Ban(nn.Module):

@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from models.rnn import RNN
-from models import nonlinearity
+from components import nonlinearity
 
 
 class MultiModalCore(nn.Module):

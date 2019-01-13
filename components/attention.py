@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.nn.utils.weight_norm import weight_norm
-from models.fc import FCNet, BCNet
+from components.fc import FCNet, BCNet
 
 
 class BaseAttention(nn.Module):

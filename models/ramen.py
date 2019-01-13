@@ -1,9 +1,9 @@
 import torch.nn as nn
 
-from models import nonlinearity
-from models.language_model import QuestionEmbedding
-from models.language_model import WordEmbedding
-from models.multi_modal_core import MultiModalCore
+from components import nonlinearity
+from components.language_model import QuestionEmbedding
+from components.language_model import WordEmbedding
+from components.multi_modal_core import MultiModalCore
 
 
 class Ramen(nn.Module):
