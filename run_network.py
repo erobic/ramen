@@ -5,6 +5,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from models import base_model
+from models import models
 from dataset import Dictionary, VQAFeatureDataset
 from train import train
 import os
@@ -80,9 +81,13 @@ def train_model():
         train_dset = None
     val_dset = VQAFeatureDataset(args.test_split, dictionary, data_root=args.dataroot, args=args)
 
-    constructor = 'build_%s' % args.model
-    model = getattr(base_model, constructor)(val_dset, args.num_hid, args.w_emb_size).cuda()
-    model.w_emb.init_embedding(args.glove_file)
+    #constructor = 'build_%s' % args.model
+    #model = getattr(base_model, constructor)(val_dset, args.num_hid, args.w_emb_size).cuda()
+    #model.w_emb.init_embedding(args.glove_file)
+    args.w_emb_size  = val_dset.dictionary.ntoken
+    args.num_ans_candidates = val_dset.num_ans_candidates
+    args.v_dim = val_dset.v_dim
+    model = getattr(models, args.model)(args)
 
     model = nn.DataParallel(model).cuda()
     print("Our kickass model {}".format(model))
