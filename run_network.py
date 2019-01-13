@@ -1,15 +1,14 @@
 import argparse
+import json
+import os
 
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from models import base_model
-from models import models
 from dataset import Dictionary, VQAFeatureDataset
+from models import models
 from train import train
-import os
-import json
 
 
 def parse_args():
@@ -21,6 +20,7 @@ def parse_args():
 
     parser.add_argument('--epochs', type=int, default=35)
     parser.add_argument('--num_hid', type=int, default=1024)
+    parser.add_argument('--q_emb_dim', type=int, default=1024)
     parser.add_argument('--model', type=str, default='UpDn')
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--seed', type=int, default=1111, help='random seed')
@@ -48,6 +48,20 @@ def parse_args():
     parser.add_argument('--test_has_answers', action='store_true')
     parser.add_argument('--train_split', type=str, default='train')
     parser.add_argument('--token_length', type=int, default=20)
+
+    # RAMEN specific arguments
+    parser.add_argument('--mmc_nonlinearity', default='Swish')
+    parser.add_argument('--mmc_dropout', default=0)
+    parser.add_argument('--disable_early_fusion', action='store_true')
+    parser.add_argument('--disable_late_fusion', action='store_true')
+    parser.add_argument('--mmc_connection', default='residual')
+    parser.add_argument('--mmc_aggregator_layers', type=int, default=1)
+    parser.add_argument('--mmc_aggregator_dim', type=int, default=1024)
+    parser.add_argument('--mmc_sizes', type=int, nargs='+', default=[1024, 1024, 1024, 1024],
+                        help='Layer sizes for Multi Modal Core')
+    parser.add_argument('--classifier_sizes', type=int, nargs='+', default=[2048])
+    parser.add_argument('--classifier_nonlinearity', type=str, default='Swish')
+    parser.add_argument('--classifier_dropout', type=float, default=0.5)
     args = parser.parse_args()
 
     args.dataroot = args.data_root
@@ -74,6 +88,15 @@ def parse_args():
     return args
 
 
+def load_bottom_up_dictionary(data_root, features_subdir):
+    with open(os.path.join(data_root, features_subdir, 'dictionary.json')) as df:
+        qn_word_map = json.load(df)
+    with open(os.path.join(data_root, features_subdir, 'answer_ix_map.json')) as af:
+        answer_ix_map = json.load(af)
+    dictionary = [qn_word_map['word_to_ix'], answer_ix_map['answer_to_ix']]
+    return dictionary
+
+
 def train_model():
     if not args.test:
         train_dset = VQAFeatureDataset(args.train_split, dictionary, data_root=args.dataroot, args=args)
@@ -81,10 +104,7 @@ def train_model():
         train_dset = None
     val_dset = VQAFeatureDataset(args.test_split, dictionary, data_root=args.dataroot, args=args)
 
-    #constructor = 'build_%s' % args.model
-    #model = getattr(base_model, constructor)(val_dset, args.num_hid, args.w_emb_size).cuda()
-    #model.w_emb.init_embedding(args.glove_file)
-    args.w_emb_size  = val_dset.dictionary.ntoken
+    args.w_emb_size = val_dset.dictionary.ntoken
     args.num_ans_candidates = val_dset.num_ans_candidates
     args.v_dim = val_dset.v_dim
     model = getattr(models, args.model)(args)
@@ -125,7 +145,7 @@ def train_model():
 if __name__ == '__main__':
     args = parse_args()
     print("Running experiment with these parameters:")
-    print(json.dumps(vars(args), indent=4))
+    print(json.dumps(vars(args), indent=4, sort_keys=True))
 
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)

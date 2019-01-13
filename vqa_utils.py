@@ -124,7 +124,6 @@ class VqaUtils:
             if 'vqa_annotation' in full_question:
                 question_type = full_question['vqa_annotation']['question_type']
             else:
-                print("full_question {}".format(full_question))
                 question_type = "unknown"
         return question_type
 
