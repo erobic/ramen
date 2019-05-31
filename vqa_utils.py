@@ -33,12 +33,10 @@ class VqaUtils:
 
     @staticmethod
     def get_image_features(curr_image_features, curr_spatial_features, spatial_feature_type,
-                           spatial_feature_length, num_objects, do_not_normalize_image_feats):
+                           spatial_feature_length, num_objects):
         assert spatial_feature_type is None or spatial_feature_type in ['simple', 'linear',
                                                                         'mesh', 'none'], "Unsupported spatial_feature_type {}".format(
             spatial_feature_type)
-        if not do_not_normalize_image_feats:
-            curr_image_features = VqaUtils.normalize_features(curr_image_features)
         if spatial_feature_type == 'none':
             return curr_image_features
 
@@ -58,8 +56,6 @@ class VqaUtils:
             for obj_ix in range(num_objects):
                 curr_mesh = np.array(np.meshgrid(linear_features_x[obj_ix], linear_features_y[obj_ix])).flatten()
                 meshes.append(curr_mesh)
-            if not do_not_normalize_image_feats:
-                meshes = VqaUtils.normalize_features(np.array(meshes))
             curr_entry = np.concatenate((curr_image_features, meshes), axis=1)
         else:
             curr_entry = VqaUtils.normalize_features(curr_image_features)

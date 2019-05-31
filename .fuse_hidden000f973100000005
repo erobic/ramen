@@ -31,3 +31,5 @@ Traceback (most recent call last):
     chunk = read(handle, remaining)
 ConnectionResetError: [Errno 104] Connection reset by peer
 ./scripts/demo/ramen.sh: line 11:  4072 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${MODEL} --model ${MODEL} --h5_prefix all > ${RESULTS_ROOT}/${MODEL}.log
+./scripts/demo/ramen.sh: line 11:  7562 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${MODEL} --model ${MODEL} --h5_prefix all > ${RESULTS_ROOT}/${MODEL}.log
+./scripts/demo/ramen.sh: line 11: 12134 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${MODEL} --model ${MODEL} --h5_prefix all > ${RESULTS_ROOT}/${MODEL}.log

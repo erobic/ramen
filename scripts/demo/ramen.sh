@@ -7,5 +7,4 @@ MODEL=Ramen
 python -u run_network.py \
 --data_root ${DATA_ROOT} \
 --expt_name ${MODEL} \
---model ${MODEL} \
---h5_prefix all > ${RESULTS_ROOT}/${MODEL}.log
+--model ${MODEL} > ${RESULTS_ROOT}/${MODEL}.log

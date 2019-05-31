@@ -226,16 +226,18 @@ class VQAFeatureDataset(Dataset):
         self.load_h5()
         entry = self.entries[index]
         feature_ix = entry['image']
-        features = self.features[feature_ix]
-        if not self.args.do_not_normalize_image_feats:
-            features = VqaUtils.normalize_features(features)
-        spatials = self.spatials[feature_ix]
+        features = self.features[int(feature_ix)]
+        # if not self.args.do_not_normalize_image_feats:
+        #     features = VqaUtils.normalize_features(features)
+        spatials = self.spatials[int(feature_ix)]
         curr_entry = VqaUtils.get_image_features(features, spatials,
                                                  self.args.spatial_feature_type,
                                                  self.args.spatial_feature_length,
-                                                 self.args.num_objects,
-                                                 self.args.do_not_normalize_image_feats)
+                                                 self.args.num_objects)
         question = entry['q_token']
+        # invert question
+        q_len = len(question)
+        question = question.index_select(0, torch.arange(q_len-1, -1, -1).long())
         question_id = entry['question_id']
         full_question = self.question_map[question_id]
 

@@ -95,7 +95,7 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
                 loss = instance_bce_with_logits(pred, answers)
                 loss.backward()
                 train_metrics.update_per_batch(model, answers, loss, pred, visual_features.shape[0])
-                nn.utils.clip_grad_norm_(model.parameters(), .25)
+                #nn.utils.clip_grad_norm_(model.parameters(), .25)
                 optimizer.step()
                 optimizer.zero_grad()
 
