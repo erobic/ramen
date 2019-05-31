@@ -105,9 +105,9 @@ if __name__ == '__main__':
                 base64.decodestring(bytes(item['features'], 'utf-8')),
                 dtype=np.float32).reshape((item['num_boxes'], -1))
             spatial_img_features[counter, :, :] = spatial_features
-            counter += 1
             image_ids_map['image_id_to_ix'][str(image_id)] = str(counter)
             image_ids_map['ix_to_image_id'][str(counter)] = str(image_id)
+            counter += 1
             print(f"Completed image index {counter}\r", end="")
 
     with open(os.path.join(args.data_root, 'features', f'{output_split}_ids_map.json'), 'w') as f:
@@ -115,3 +115,20 @@ if __name__ == '__main__':
 
     h5_file.close()
     print("done!")
+
+
+# def fix(prefix):
+#
+#     tv = json.load(open(f'/hdd/robik/VQACP/features/{prefix}_ids_map.json'))
+#     new_ids_map = {'image_id_to_ix': {}, 'ix_to_image_id': {}}
+#     for ix in list(tv['ix_to_image_id'].keys()):
+#         new_ix = int(ix) - 1
+#         img_id = tv['ix_to_image_id'][ix]
+#         new_ids_map['ix_to_image_id'][str(new_ix)] = img_id
+#         new_ids_map['image_id_to_ix'][img_id] = str(new_ix)
+#
+#     json.dump(new_ids_map, open(f'/hdd/robik/VQACP/features/{prefix}_ids_map.json', 'w'))
+#
+# if __name__ == "__main__":
+#     fix('trainval')
+#     fix('test')
