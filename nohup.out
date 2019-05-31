@@ -1,0 +1,33 @@
+./scripts/demo/ramen.sh: line 11:  2018 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${MODEL} --model ${MODEL} --h5_prefix all > ${RESULTS_ROOT}/${MODEL}.log
+./scripts/demo/ramen.sh: line 11:  3654 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${MODEL} --model ${MODEL} --h5_prefix all > ${RESULTS_ROOT}/${MODEL}.log
+Traceback (most recent call last):
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/resource_sharer.py", line 142, in _serve
+    with self._listener.accept() as conn:
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/connection.py", line 455, in accept
+    deliver_challenge(c, self._authkey)
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/connection.py", line 722, in deliver_challenge
+    response = connection.recv_bytes(256)        # reject large message
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/connection.py", line 216, in recv_bytes
+    buf = self._recv_bytes(maxlength)
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/connection.py", line 407, in _recv_bytes
+    buf = self._recv(4)
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/connection.py", line 379, in _recv
+    chunk = read(handle, remaining)
+ConnectionResetError: [Errno 104] Connection reset by peer
+./scripts/demo/ramen.sh: line 11:  3781 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${MODEL} --model ${MODEL} --h5_prefix all > ${RESULTS_ROOT}/${MODEL}.log
+./scripts/demo/ramen.sh: line 11:  3893 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${MODEL} --model ${MODEL} --h5_prefix all > ${RESULTS_ROOT}/${MODEL}.log
+Traceback (most recent call last):
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/resource_sharer.py", line 142, in _serve
+    with self._listener.accept() as conn:
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/connection.py", line 455, in accept
+    deliver_challenge(c, self._authkey)
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/connection.py", line 722, in deliver_challenge
+    response = connection.recv_bytes(256)        # reject large message
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/connection.py", line 216, in recv_bytes
+    buf = self._recv_bytes(maxlength)
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/connection.py", line 407, in _recv_bytes
+    buf = self._recv(4)
+  File "/home/robik/anaconda3/lib/python3.6/multiprocessing/connection.py", line 379, in _recv
+    chunk = read(handle, remaining)
+ConnectionResetError: [Errno 104] Connection reset by peer
+./scripts/demo/ramen.sh: line 11:  4072 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${MODEL} --model ${MODEL} --h5_prefix all > ${RESULTS_ROOT}/${MODEL}.log

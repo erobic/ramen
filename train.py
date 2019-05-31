@@ -66,9 +66,20 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
     val_per_type_metric_list = []
 
     if optimizer is None:
-        optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()))
+        lr = 5e-4
+        lr_decay_step = 2
+        lr_decay_rate = .25
+        lr_decay_epochs = range(10, 15, lr_decay_step)
+        gradual_warmup_steps = [0.5 * lr, 1.0 * lr, 1.5 * lr, 2.0 * lr]
+
+        optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
 
     for epoch in range(start_epoch, num_epochs):
+        if epoch < len(gradual_warmup_steps):
+            optimizer.param_groups[0]['lr'] = gradual_warmup_steps[epoch]
+        elif epoch in lr_decay_epochs:
+            optimizer.param_groups[0]['lr'] *= lr_decay_rate
+
         is_best = False
         train_metrics, val_metrics = Metrics(), Metrics()
 
@@ -84,6 +95,7 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
                 loss = instance_bce_with_logits(pred, answers)
                 loss.backward()
                 train_metrics.update_per_batch(model, answers, loss, pred, visual_features.shape[0])
+                nn.utils.clip_grad_norm_(model.parameters(), .25)
                 optimizer.step()
                 optimizer.zero_grad()
 

@@ -139,23 +139,27 @@ class VQAFeatureDataset(Dataset):
         with open(os.path.join(args.feature_dir, '{}_ids_map.json'.format(h5_name))) as f:
             self.img_id2idx = json.load(f)['image_id_to_ix']
         h5_path = os.path.join(args.feature_dir, '%s%s.hdf5' % (h5_name, '' if self.adaptive else ''))
+        self.h5_path = h5_path
 
         print('loading features_path from h5 file')
-        self.hf = h5py.File(h5_path, 'r')
-        self.features = self.hf['image_features']
-        self.spatials = self.hf['spatial_features']
-        if self.adaptive:
-            self.pos_boxes = self.hf.get('pos_boxes')
-
+        hf = h5py.File(h5_path, 'r')
+        if 'image_features' in hf:
+            features = hf['image_features']
+        else:
+            features = hf['features']
+        if 'spatial_features' in hf:
+            spatials = hf['spatial_features']
+        else:
+            spatials = hf['boxes']
         self.entries = _load_dataset(data_root, name, self.img_id2idx, self.label2ans)
         self.tokenize(args.token_length)
         print("token length {}".format(args.token_length))
         self.tensorize()
-        print("self.features_path.size() {}".format(self.features.shape))
-        self.v_dim = self.features.shape[1 if self.adaptive else 2] + VqaUtils.get_spatial_length(
+        print("self.features_path.size() {}".format(features.shape))
+        self.v_dim = features.shape[1 if self.adaptive else 2] + VqaUtils.get_spatial_length(
             args.spatial_feature_type,
             args.spatial_feature_length)
-        self.s_dim = self.spatials.shape[1 if self.adaptive else 2]
+        self.s_dim = spatials.shape[1 if self.adaptive else 2]
         self.printed = False
         with open(os.path.join(args.data_root, 'questions', name + "_questions.json")) as qf:
             print("Loading questions...")
@@ -203,7 +207,23 @@ class VQAFeatureDataset(Dataset):
     def close_h5_file(self):
         self.hf.close()
 
+    def load_h5(self):
+        if not hasattr(self, 'hf'):
+            self.hf = h5py.File(self.h5_path, 'r')
+            if 'image_features' in self.hf:
+                self.features = self.hf['image_features']
+            else:
+                self.features = self.hf['features']
+            if 'spatial_features' in self.hf:
+                self.spatials = self.hf['spatial_features']
+            else:
+                self.spatials = self.hf['boxes']
+
+            if self.adaptive:
+                self.pos_boxes = self.hf.get('pos_boxes')
+
     def __getitem__(self, index):
+        self.load_h5()
         entry = self.entries[index]
         feature_ix = entry['image']
         features = self.features[feature_ix]

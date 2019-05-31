@@ -22,8 +22,8 @@ def parse_args():
     parser.add_argument('--num_hid', type=int, default=1024)
     parser.add_argument('--q_emb_dim', type=int, default=1024)
     parser.add_argument('--model', type=str, default='UpDn')
-    parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--seed', type=int, default=1111, help='random seed')
+    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--seed', type=int, default=42, help='random seed')
     parser.add_argument('--answers_available', type=int, default=1, help='Are the answers available?')
     parser.add_argument('--mode', type=str, choices=['train', 'test'],
                         help='Checkpoint must be specified  for test mode', default='train')
@@ -47,7 +47,7 @@ def parse_args():
     parser.add_argument('--test_split', type=str, default='val')
     parser.add_argument('--test_has_answers', action='store_true')
     parser.add_argument('--train_split', type=str, default='train')
-    parser.add_argument('--token_length', type=int, default=20)
+    parser.add_argument('--token_length', type=int, default=14)
 
     # RAMEN specific arguments
     parser.add_argument('--mmc_nonlinearity', default='Swish')
@@ -139,10 +139,10 @@ def train_model():
 
     if not args.test:
         # TODO: For some reason, making num_workers > 1 retrieves gibberish data
-        train_loader = DataLoader(train_dset, batch_size, shuffle=True, num_workers=1)
+        train_loader = DataLoader(train_dset, batch_size, shuffle=True, num_workers=16)
     else:
         train_loader = None
-    eval_loader = DataLoader(val_dset, batch_size, shuffle=False, num_workers=1)
+    eval_loader = DataLoader(val_dset, batch_size, shuffle=False, num_workers=16)
 
     train(model, train_loader, eval_loader, args.epochs, optimizer, args, epoch, best_val_score, best_epoch)
 

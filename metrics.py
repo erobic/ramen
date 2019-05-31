@@ -25,8 +25,8 @@ class Metrics:
     def update_per_batch(self, model, answers, loss, pred, curr_size):
         upper_bound = answers.max(1)[0].sum()
         self.upper_bound += upper_bound
-        self.total_norm += nn.utils.clip_grad_norm_(model.parameters(), 0.25)
-        self.count_norm += 1
+        # self.total_norm += nn.utils.clip_grad_norm_(model.parameters(), 0.25)
+        # self.count_norm += 1
         from train import compute_score_with_logits
         batch_score = compute_score_with_logits(pred, answers.data).sum()
         self.loss += loss.data * curr_size

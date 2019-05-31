@@ -19,6 +19,16 @@
 `./scripts/preprocess/preprocess_questions.sh`
 
 #### Step 5 - Extract image features
+##### For VQAv1/VQAv2/C-VQA and VQA-CP
+Download train+val features into ```${FEATURES_DIR}``` from the following link:
+https://imagecaption.blob.core.windows.net/imagecaption/trainval_36.zip
+
+##### Create hdf5 files
+Execute the following script to extract the zip files and create hdf5 files ```./tsv_to_h5.sh```
+
+Train and val features are extracted to ```${DATA_ROOT}/features/trainval.hdf5```
+
+Test features are extracted to ```${DATA_ROOT}/features/test.hdf5```
 
 #### Step 6 - Train
 Run the following command (check `scripts/demo/updn.sh`):
