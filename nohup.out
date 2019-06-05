@@ -1,0 +1,10 @@
+./scripts/ramen_VQACP_all_LSTM.sh: line 16: /Ramen_VQACP_1000_all_LSTM.log: Permission denied
+./scripts/ramen_VQACP_all_LSTM.sh: line 16: /Ramen_VQACP_1000_all_LSTM.log: Permission denied
+Traceback (most recent call last):
+  File "run_network.py", line 166, in <module>
+    train_model()
+  File "run_network.py", line 112, in train_model
+    train_dset = VQAFeatureDataset(args.train_split, dictionary, data_root=args.dataroot, args=args)
+  File "/mnt/0A49FDC312D17063/robik/projects/ramen/dataset.py", line 182, in __init__
+    with open(os.path.join(args.feature_dir, '{}_ids_map.json'.format(h5_name))) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/hdd/robik/VQACP_1000/features/train_ids_map.json'

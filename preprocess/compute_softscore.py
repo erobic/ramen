@@ -308,13 +308,13 @@ if __name__ == '__main__':
     answers = train_answers + val_answers
     # occurence = filter_answers(answers, 9)
     if args.top_k is not None:
-        occurence = filter_top_k_answers(train_answers, top_k=args.top_k)
+        occurrence = filter_top_k_answers(train_answers, top_k=args.top_k)
     elif args.min_occurrence is not None:
-        occurence = filter_answers(answers, min_occurence=args.min_occurrence)
+        occurrence = filter_answers(answers, min_occurence=args.min_occurrence)
     else:
         occurrence = filter_answers(answers, min_occurence=0)
 
-    ans2label = create_ans2label(occurence, 'trainval', cache_root=features_path)
+    ans2label = create_ans2label(occurrence, 'trainval', cache_root=features_path)
     compute_target(train_answers, ans2label, 'train', cache_root=features_path)
     compute_target(val_answers, ans2label, 'val', cache_root=features_path)
     print("Computed softscore!")

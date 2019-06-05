@@ -80,6 +80,39 @@ def _create_entry(img, question, answer):
     return entry
 
 
+def combine_trainval(dataroot, force_create=False):
+    trainval_qns_file = os.path.join(dataroot, 'questions/trainval_questions.json')
+    if not os.path.exists(trainval_qns_file) or force_create:
+        train_questions = json.load(open(os.path.join(dataroot, 'questions/train_questions.json')))
+        val_questions = json.load(open(os.path.join(dataroot, 'questions/val_questions.json')))
+        if 'questions' in train_questions:
+            train_questions = train_questions['questions']
+        if 'questions' in val_questions:
+            val_questions = val_questions['questions']
+        trainval_questions = train_questions+val_questions
+        json.dump(trainval_questions, open(trainval_qns_file, 'w'))
+        print(f"Saved {trainval_qns_file}")
+
+    trainval_anns_file = os.path.join(dataroot, 'questions/trainval_annotations.json')
+    if not os.path.exists(trainval_anns_file) or force_create:
+        train_annotations = json.load(open(os.path.join(dataroot, 'questions/train_annotations.json')))
+        val_annotations = json.load(open(os.path.join(dataroot, 'questions/val_annotations.json')))
+        if 'annotations' in train_annotations:
+            train_annotations = train_annotations['annotations']
+        if 'annotations' in val_annotations:
+            val_annotations = val_annotations['annotations']
+        trainval_annotations = train_annotations + val_annotations
+        json.dump(trainval_annotations, open(trainval_anns_file, 'w'))
+        print(f"Saved {trainval_anns_file}")
+
+    trainval_target_file = os.path.join(dataroot, 'features/trainval_target.json')
+    if not os.path.exists(trainval_target_file) or force_create:
+        train_target = json.load(open(os.path.join(dataroot, 'features/train_target.json')))
+        val_target = json.load(open(os.path.join(dataroot, 'features/val_target.json')))
+        trainval_target = train_target + val_target
+        json.dump(trainval_target, open(trainval_target_file, 'w'))
+        print(f"Saved {trainval_target_file}")
+
 def _load_dataset(dataroot, name, img_id2val, label2ans):
     """Load entries
 
@@ -89,11 +122,15 @@ def _load_dataset(dataroot, name, img_id2val, label2ans):
     """
     question_path = os.path.join(
         dataroot, 'questions/%s_questions.json' % (name))
+    if name == 'trainval':
+        combine_trainval(dataroot)
     questions = json.load(open(question_path))
     if 'questions' in questions:
         questions = questions['questions']
     questions = sorted(questions,
                        key=lambda x: x['question_id'])
+    answer_not_found = 0
+
     if 'test' not in name and 'test_dev' not in name:
         qn_id_to_ans = {}
         answer_path = os.path.join(dataroot, 'features', '%s_target.json' % name)
@@ -102,7 +139,6 @@ def _load_dataset(dataroot, name, img_id2val, label2ans):
             qn_id_to_ans[str(answer['question_id'])] = answer
 
         entries = []
-        answer_not_found = 0
         for question in questions:
             answer = qn_id_to_ans[str(question['question_id'])].copy()
             # if str(question['question_id']) in qn_id_to_ans:

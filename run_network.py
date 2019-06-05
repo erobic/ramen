@@ -22,7 +22,7 @@ def parse_args():
     parser.add_argument('--num_hid', type=int, default=1024)
     parser.add_argument('--q_emb_dim', type=int, default=1024)
     parser.add_argument('--model', type=str, default='UpDn')
-    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--seed', type=int, default=42, help='random seed')
     parser.add_argument('--answers_available', type=int, default=1, help='Are the answers available?')
     parser.add_argument('--mode', type=str, choices=['train', 'test'],
@@ -48,6 +48,7 @@ def parse_args():
     parser.add_argument('--test_has_answers', action='store_true')
     parser.add_argument('--train_split', type=str, default='train')
     parser.add_argument('--token_length', type=int, default=14)
+    parser.add_argument('--question_rnn_type', type=str, default='GRU')
 
     # RAMEN specific arguments
     parser.add_argument('--mmc_nonlinearity', default='Swish')
@@ -70,7 +71,6 @@ def parse_args():
     # RN specific arguments
     parser.add_argument('--interactor_sizes', type=int, nargs='+', default=[512, 512, 512, 512])
     parser.add_argument('--aggregator_sizes', type=int, nargs='+', default=[512, 512])
-
 
     args = parser.parse_args()
 
