@@ -58,3 +58,6 @@ To track all of the experiments properly, let us follow this convention/structur
   
 #### Step 7 - Test
 TODO
+
+### CLEVR
+#### Extract UpDn features for CLEVR

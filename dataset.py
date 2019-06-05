@@ -102,8 +102,15 @@ def _load_dataset(dataroot, name, img_id2val, label2ans):
             qn_id_to_ans[str(answer['question_id'])] = answer
 
         entries = []
+        answer_not_found = 0
         for question in questions:
             answer = qn_id_to_ans[str(question['question_id'])].copy()
+            # if str(question['question_id']) in qn_id_to_ans:
+            #     answer = qn_id_to_ans[str(question['question_id'])].copy()
+            # else:
+            #     answer_not_found += 1
+            #     answer = {'question_id': question['question_id'], 'image_id': question['image_id'], 'scores': [],
+            #               'labels': []}
             utils.assert_eq(question['question_id'], answer['question_id'])
             utils.assert_eq(question['image_id'], answer['image_id'])
             img_id = question['image_id']
@@ -113,7 +120,7 @@ def _load_dataset(dataroot, name, img_id2val, label2ans):
         for question in questions:
             img_id = question['image_id']
             entries.append(_create_entry(img_id2val[str(img_id)], question, None))
-
+    print("answers not found {}".format(answer_not_found))
     return entries
 
 
@@ -236,8 +243,8 @@ class VQAFeatureDataset(Dataset):
                                                  self.args.num_objects)
         question = entry['q_token']
         # invert question
-        q_len = len(question)
-        question = question.index_select(0, torch.arange(q_len-1, -1, -1).long())
+        # q_len = len(question)
+        # question = question.index_select(0, torch.arange(q_len-1, -1, -1).long())
         question_id = entry['question_id']
         full_question = self.question_map[question_id]
 

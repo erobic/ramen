@@ -27,6 +27,26 @@ def create_dictionary(dataroot):
     return dictionary
 
 
+# def create_glove_embedding_init(idx2word, glove_file):
+#     word2emb = {}
+#     with open(glove_file, 'r') as f:
+#         entries = f.readlines()
+#     emb_dim = len(entries[0].split(' ')) - 1
+#     print('embedding dim is %d' % emb_dim)
+#     weights = np.zeros((len(idx2word), emb_dim), dtype=np.float32)
+#
+#     for entry in entries:
+#         vals = entry.replace('\n', '').split(' ')
+#
+#         word = vals[0]
+#         vals = np.asarray([float(v) for v in vals[1:]])
+#         word2emb[word] = vals
+#     for idx, word in enumerate(idx2word):
+#         if word not in word2emb:
+#             continue
+#         weights[idx] = word2emb[word]
+#     return weights, word2emb
+
 def create_glove_embedding_init(idx2word, glove_file):
     word2emb = {}
     with open(glove_file, 'r') as f:
@@ -37,16 +57,17 @@ def create_glove_embedding_init(idx2word, glove_file):
 
     for entry in entries:
         vals = entry.replace('\n', '').split(' ')
-
         word = vals[0]
+        #vals = map(float, vals[1:])
         vals = np.asarray([float(v) for v in vals[1:]])
         word2emb[word] = vals
+
     for idx, word in enumerate(idx2word):
         if word not in word2emb:
             continue
+        # print("word2emb: ", word2emb[word])
         weights[idx] = word2emb[word]
     return weights, word2emb
-
 
 if __name__ == '__main__':
     parser= argparse.ArgumentParser()

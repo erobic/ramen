@@ -7,9 +7,9 @@ import re
 from six.moves import cPickle
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from preprocess.dataset import Dictionary
-import preprocess.utils as utils
-import argparse
+from bottom_up_preprocess_text.dataset import Dictionary
+import bottom_up_preprocess_text.utils as utils
+
 contractions = {
     "aint": "ain't", "arent": "aren't", "cant": "can't", "couldve":
         "could've", "couldnt": "couldn't", "couldn'tve": "couldn't've",
@@ -141,18 +141,13 @@ def filter_answers(answers_dset, min_occurence):
         if gtruth not in occurence:
             occurence[gtruth] = set()
         occurence[gtruth].add(ans_entry['question_id'])
-    filt_occurence = {}
     for answer in occurence.keys():
-        if len(occurence[answer]) >= min_occurence:
-            #occurence.pop(answer)
-            if answer not in filt_occurence:
-                filt_occurence[answer] = []
-            filt_occurence[answer] = occurence[answer]
-
+        if len(occurence[answer]) < min_occurence:
+            occurence.pop(answer)
 
     print('Num of answers that appear >= %d times: %d' % (
-        min_occurence, len(filt_occurence)))
-    return filt_occurence
+        min_occurence, len(occurence)))
+    return occurence
 
 
 def filter_top_k_answers(answers_dset, top_k=1000):
@@ -193,7 +188,7 @@ def create_ans2label(occurence, name, cache_root):
 
     occurence: dict {answer -> whatever}
     name: prefix of the output file
-    features_path: str
+    cache_root: str
     """
     ans2label = {}
     label2ans = []
@@ -276,45 +271,34 @@ def get_question(qid, questions):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--data_root')
-    parser.add_argument('--top_k', type=int)
-    parser.add_argument('--min_occurrence', type=int)
-    args = parser.parse_args()
-
-    data_root = args.data_root
-    features_path = os.path.join(data_root, 'features')
-    train_answer_file = os.path.join(data_root, 'questions', 'train_annotations.json')
-    print("Computing softscore ...")
+    root = '/hdd/robik'
+    dataset = 'VQACP_1000'
+    dataroot = os.path.join(root, dataset)
+    cache_root = os.path.join(dataroot, 'bottom-up-attention')
+    train_answer_file = os.path.join(dataroot, 'vqa2', 'train_annotations.json')
     train_answers = json.load(open(train_answer_file))
     if 'annotations' in train_answers:
         train_answers = train_answers['annotations']
 
-    val_answer_file = os.path.join(data_root, 'questions', 'val_annotations.json')
+    val_answer_file = os.path.join(dataroot, 'vqa2', 'val_annotations.json')
     val_answers = json.load(open(val_answer_file))
     if 'annotations' in val_answers:
         val_answers = val_answers['annotations']
 
-    train_question_file = os.path.join(data_root, 'questions', 'train_questions.json')
+    train_question_file = os.path.join(dataroot, 'vqa2', 'train_questions.json')
     train_questions = json.load(open(train_question_file))
     if 'questions' in train_questions:
         train_questions = train_questions['questions']
 
-    val_question_file = os.path.join(data_root, 'questions', 'val_questions.json')
+    val_question_file = os.path.join(dataroot, 'vqa2', 'val_questions.json')
     val_questions = json.load(open(val_question_file))
     if 'questions' in val_questions:
         val_questions = val_questions['questions']
 
     answers = train_answers + val_answers
     # occurence = filter_answers(answers, 9)
-    if args.top_k is not None:
-        occurence = filter_top_k_answers(train_answers, top_k=args.top_k)
-    elif args.min_occurrence is not None:
-        occurence = filter_answers(answers, min_occurence=args.min_occurrence)
-    else:
-        occurrence = filter_answers(answers, min_occurence=0)
-
-    ans2label = create_ans2label(occurence, 'trainval', cache_root=features_path)
-    compute_target(train_answers, ans2label, 'train', cache_root=features_path)
-    compute_target(val_answers, ans2label, 'val', cache_root=features_path)
-    print("Computed softscore!")
+    occurence = filter_answers(answers, min_occurence=9)
+    # occurence = filter_top_k_answers(train_answers, top_k=1000)
+    ans2label = create_ans2label(occurence, 'trainval', cache_root=cache_root)
+    compute_target(train_answers, ans2label, 'train', cache_root=cache_root)
+    compute_target(val_answers, ans2label, 'val', cache_root=cache_root)

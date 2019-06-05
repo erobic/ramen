@@ -57,6 +57,7 @@ def parse_args():
     parser.add_argument('--mmc_connection', default='residual')
     parser.add_argument('--mmc_aggregator_layers', type=int, default=1)
     parser.add_argument('--mmc_aggregator_dim', type=int, default=1024)
+    parser.add_argument('--aggregator_dropout', type=float, default=0)
     parser.add_argument('--mmc_sizes', type=int, nargs='+', default=[1024, 1024, 1024, 1024],
                         help='Layer sizes for Multi Modal Core')
     parser.add_argument('--classifier_sizes', type=int, nargs='+', default=[2048])
@@ -138,7 +139,6 @@ def train_model():
         best_epoch = model_data['best_epoch']
 
     if not args.test:
-        # TODO: For some reason, making num_workers > 1 retrieves gibberish data
         train_loader = DataLoader(train_dset, batch_size, shuffle=True, num_workers=16)
     else:
         train_loader = None

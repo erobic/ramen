@@ -1,0 +1,64 @@
+./scripts/ramen_VQACP_all_hdf5.sh: line 17:  1686 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${EXPT_NAME} --h5_prefix all --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log
+./scripts/ramen_VQACP_all_hdf5.sh: line 17:  4997 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${EXPT_NAME} --h5_prefix all --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log
+Traceback (most recent call last):
+  File "run_network.py", line 165, in <module>
+    train_model()
+  File "run_network.py", line 149, in train_model
+    train_dset.close_h5_file()
+  File "/mnt/0A49FDC312D17063/robik/projects/ramen/dataset.py", line 214, in close_h5_file
+    self.hf.close()
+AttributeError: 'VQAFeatureDataset' object has no attribute 'hf'
+usage: run_network.py [-h] [--data_root DATA_ROOT]
+                      [--results_path RESULTS_PATH]
+                      [--do_not_normalize_image_feats] [--epochs EPOCHS]
+                      [--num_hid NUM_HID] [--q_emb_dim Q_EMB_DIM]
+                      [--model MODEL] [--batch_size BATCH_SIZE] [--seed SEED]
+                      [--answers_available ANSWERS_AVAILABLE]
+                      [--mode {train,test}] [--w_emb_size W_EMB_SIZE]
+                      [--dictionary_file DICTIONARY_FILE]
+                      [--glove_file GLOVE_FILE]
+                      [--spatial_feature_type SPATIAL_FEATURE_TYPE]
+                      [--spatial_feature_length SPATIAL_FEATURE_LENGTH]
+                      [--h5_prefix {use_split,all}]
+                      [--num_objects NUM_OBJECTS]
+                      [--feature_subdir FEATURE_SUBDIR] [--resume]
+                      [--resume_expt_dir RESUME_EXPT_DIR]
+                      [--resume_expt_name RESUME_EXPT_NAME]
+                      [--resume_expt_type {best,latest}] --expt_name EXPT_NAME
+                      [--test] [--test_split TEST_SPLIT] [--test_has_answers]
+                      [--train_split TRAIN_SPLIT]
+                      [--token_length TOKEN_LENGTH]
+                      [--mmc_nonlinearity MMC_NONLINEARITY]
+                      [--mmc_dropout MMC_DROPOUT] [--disable_early_fusion]
+                      [--disable_late_fusion]
+                      [--mmc_connection MMC_CONNECTION]
+                      [--mmc_aggregator_layers MMC_AGGREGATOR_LAYERS]
+                      [--mmc_aggregator_dim MMC_AGGREGATOR_DIM]
+                      [--aggregator_dropout AGGREGATOR_DROPOUT]
+                      [--mmc_sizes MMC_SIZES [MMC_SIZES ...]]
+                      [--classifier_sizes CLASSIFIER_SIZES [CLASSIFIER_SIZES ...]]
+                      [--classifier_nonlinearity CLASSIFIER_NONLINEARITY]
+                      [--classifier_dropout CLASSIFIER_DROPOUT]
+                      [--glimpse GLIMPSE]
+                      [--interactor_sizes INTERACTOR_SIZES [INTERACTOR_SIZES ...]]
+                      [--aggregator_sizes AGGREGATOR_SIZES [AGGREGATOR_SIZES ...]]
+run_network.py: error: unrecognized arguments: --aggregator_droput 0.5
+Traceback (most recent call last):
+  File "run_network.py", line 166, in <module>
+    train_model()
+  File "run_network.py", line 112, in train_model
+    train_dset = VQAFeatureDataset(args.train_split, dictionary, data_root=args.dataroot, args=args)
+  File "/mnt/0A49FDC312D17063/robik/projects/ramen/dataset.py", line 161, in __init__
+    self.entries = _load_dataset(data_root, name, self.img_id2idx, self.label2ans)
+  File "/mnt/0A49FDC312D17063/robik/projects/ramen/dataset.py", line 107, in _load_dataset
+    answer = qn_id_to_ans[str(question['question_id'])].copy()
+KeyError: '25013'
+./scripts/ramen_VQACP_all_hdf5_agg_dropout_0.5.sh: line 18:  8008 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${EXPT_NAME} --h5_prefix all --aggregator_dropout 0.5 --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log
+Traceback (most recent call last):
+  File "run_network.py", line 166, in <module>
+    train_model()
+  File "run_network.py", line 150, in train_model
+    train_dset.close_h5_file()
+  File "/mnt/0A49FDC312D17063/robik/projects/ramen/dataset.py", line 215, in close_h5_file
+    self.hf.close()
+AttributeError: 'VQAFeatureDataset' object has no attribute 'hf'

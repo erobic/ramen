@@ -11,11 +11,12 @@ class VqaUtils:
 
     @staticmethod
     def normalize_features(curr_image_features):
-        norm = np.linalg.norm(curr_image_features, axis=1)
-        denom = np.repeat(norm, curr_image_features.shape[1]).reshape(
-            (curr_image_features.shape[0], curr_image_features.shape[1]))
-        curr_image_features = np.divide(curr_image_features, denom)
         return curr_image_features
+        # norm = np.linalg.norm(curr_image_features, axis=1)
+        # denom = np.repeat(norm, curr_image_features.shape[1]).reshape(
+        #     (curr_image_features.shape[0], curr_image_features.shape[1]))
+        # curr_image_features = np.divide(curr_image_features, denom)
+        # return curr_image_features
 
     @staticmethod
     def get_linear_features(curr_spatial_features, num_objects, spatial_feature_length):
