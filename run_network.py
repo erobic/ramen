@@ -47,7 +47,6 @@ def parse_args():
     parser.add_argument('--test_split', type=str, default='val')
     parser.add_argument('--test_has_answers', action='store_true')
     parser.add_argument('--train_split', type=str, default='train')
-    parser.add_argument('--token_length', type=int, default=14)
     parser.add_argument('--question_rnn_type', type=str, default='GRU')
 
     # RAMEN specific arguments
@@ -64,6 +63,7 @@ def parse_args():
     parser.add_argument('--classifier_sizes', type=int, nargs='+', default=[2048])
     parser.add_argument('--classifier_nonlinearity', type=str, default='Swish')
     parser.add_argument('--classifier_dropout', type=float, default=0.5)
+    parser.add_argument('--use_pack_padded_sequence', action='store_true')
 
     # BAN specific arguments
     parser.add_argument('--glimpse', type=int, default=8)
@@ -90,6 +90,10 @@ def parse_args():
 
     args.vocab_dir = os.path.join(args.data_root, args.feature_subdir)
     args.feature_dir = os.path.join(args.data_root, args.feature_subdir)
+    if 'clevr' in args.data_root:
+        args.token_length = 44
+    else:
+        args.token_length = 14
 
     if args.dictionary_file is None:
         args.dictionary_file = args.vocab_dir + '/dictionary.pkl'

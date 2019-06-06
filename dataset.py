@@ -113,6 +113,7 @@ def combine_trainval(dataroot, force_create=False):
         json.dump(trainval_target, open(trainval_target_file, 'w'))
         print(f"Saved {trainval_target_file}")
 
+
 def _load_dataset(dataroot, name, img_id2val, label2ans):
     """Load entries
 
@@ -221,6 +222,7 @@ class VQAFeatureDataset(Dataset):
         """
         for entry in self.entries:
             tokens = self.dictionary.tokenize(entry['question'], False)
+            # if not self.args.use_pack_padded_sequence:
             tokens = tokens[:max_length]
             if len(tokens) < max_length:
                 # Note here we pad in front of the sentence

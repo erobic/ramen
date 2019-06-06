@@ -22,4 +22,6 @@ python -u run_network.py \
 --data_root ${DATA_ROOT} \
 --expt_name ${MODEL} \
 --model ${MODEL} \
---h5_prefix use_split > ${RESULTS_ROOT}/${MODEL}.log
+--spatial_feature_type mesh \
+--spatial_feature_length 16 \
+--h5_prefix use_split > ${RESULTS_ROOT}/${EXPT_NAME}.log

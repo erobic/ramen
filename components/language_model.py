@@ -85,7 +85,8 @@ class UpDnQuestionEmbedding(nn.Module):
 
 
 class QuestionEmbedding(nn.Module):
-    def __init__(self, in_dim, num_hid, nlayers=1, bidirect=True, dropout=0, rnn_type='GRU'):
+    def __init__(self, in_dim, num_hid, nlayers=1, bidirect=True, dropout=0, rnn_type='GRU',
+                 use_pack_padded_sequence=False):
         """Module for question embedding
         """
         super(QuestionEmbedding, self).__init__()
@@ -105,7 +106,7 @@ class QuestionEmbedding(nn.Module):
         self.num_hid = num_hid
         self.nlayers = nlayers
         self.rnn_type = rnn_type
-
+        self.use_pack_padded_sequence = use_pack_padded_sequence
 
     def init_hidden(self, batch):
         # just to get the type of tensor

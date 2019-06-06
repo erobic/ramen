@@ -72,7 +72,7 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
         lr_decay_epochs = range(10, 15, lr_decay_step)
         gradual_warmup_steps = [0.5 * lr, 1.0 * lr, 1.5 * lr, 2.0 * lr]
 
-        optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, weight_decay=1e-4)
+        optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
 
     for epoch in range(start_epoch, num_epochs):
         if epoch < len(gradual_warmup_steps):
