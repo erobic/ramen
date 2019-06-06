@@ -11,12 +11,12 @@ class VqaUtils:
 
     @staticmethod
     def normalize_features(curr_image_features):
-        return curr_image_features
-        # norm = np.linalg.norm(curr_image_features, axis=1)
-        # denom = np.repeat(norm, curr_image_features.shape[1]).reshape(
-        #     (curr_image_features.shape[0], curr_image_features.shape[1]))
-        # curr_image_features = np.divide(curr_image_features, denom)
         # return curr_image_features
+        norm = np.linalg.norm(curr_image_features, axis=1)
+        denom = np.repeat(norm, curr_image_features.shape[1]).reshape(
+            (curr_image_features.shape[0], curr_image_features.shape[1]))
+        curr_image_features = np.divide(curr_image_features, denom)
+        return curr_image_features
 
     @staticmethod
     def get_linear_features(curr_spatial_features, num_objects, spatial_feature_length):
@@ -49,7 +49,7 @@ class VqaUtils:
                                                                                 spatial_feature_length)
             linear_features_x = VqaUtils.normalize_features(linear_features_x)
             linear_features_y = VqaUtils.normalize_features(linear_features_y)
-            curr_entry = np.concatenate((curr_image_features, linear_features_x, linear_features_y), axis=1)
+            curr_entry = np.concatenate((VqaUtils.normalize_features(curr_image_features), linear_features_x, linear_features_y), axis=1)
         elif spatial_feature_type == 'mesh':
             linear_features_x, linear_features_y = VqaUtils.get_linear_features(curr_spatial_features, num_objects,
                                                                                 spatial_feature_length)
@@ -57,9 +57,9 @@ class VqaUtils:
             for obj_ix in range(num_objects):
                 curr_mesh = np.array(np.meshgrid(linear_features_x[obj_ix], linear_features_y[obj_ix])).flatten()
                 meshes.append(curr_mesh)
-            curr_entry = np.concatenate((curr_image_features, meshes), axis=1)
+            curr_entry = np.concatenate((VqaUtils.normalize_features(curr_image_features), meshes), axis=1)
         else:
-            curr_entry = VqaUtils.normalize_features(curr_image_features)
+            curr_entry = curr_image_features
 
         return curr_entry
 

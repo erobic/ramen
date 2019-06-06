@@ -222,7 +222,7 @@ def create_ans2label(occurence, name, cache_root):
     return ans2label
 
 
-def compute_target(answers_dset, ans2label, name, cache_root):
+def compute_target(answers_dset, ans2label, name, cache_root,fixed_score=None):
     """Augment answers_dset with soft score as label
 
     ***answers_dset should be preprocessed***
@@ -243,7 +243,10 @@ def compute_target(answers_dset, ans2label, name, cache_root):
             if answer not in ans2label:
                 continue
             labels.append(ans2label[answer])
-            score = get_score(answer_count[answer])
+            if fixed_score is None:
+                score = get_score(answer_count[answer])
+            else:
+                score = fixed_score
             scores.append(score)
 
         target.append({
@@ -315,6 +318,10 @@ if __name__ == '__main__':
         occurrence = filter_answers(answers, min_occurence=0)
 
     ans2label = create_ans2label(occurrence, 'trainval', cache_root=features_path)
-    compute_target(train_answers, ans2label, 'train', cache_root=features_path)
-    compute_target(val_answers, ans2label, 'val', cache_root=features_path)
+    if 'clevr' in args.data_root.lower():
+        fixed_score=1.0
+    else:
+        fixed_score=None
+    compute_target(train_answers, ans2label, 'train', cache_root=features_path, fixed_score=fixed_score)
+    compute_target(val_answers, ans2label, 'val', cache_root=features_path, fixed_score=fixed_score)
     print("Computed softscore!")

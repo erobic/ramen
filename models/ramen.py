@@ -13,8 +13,7 @@ class Ramen(nn.Module):
         self.mmc_net = MultiModalCore(config)
         self.w_emb = WordEmbedding(config.w_emb_size, 300)
         self.w_emb.init_embedding(config.glove_file)
-        #self.w_emb.init_un
-        self.q_emb = QuestionEmbedding(300, self.config.q_emb_dim, 1, bidirect=False, dropout=0, rnn_type=config.question_rnn_type)
+        self.q_emb = QuestionEmbedding(300, self.config.q_emb_dim, 1, bidirect=True, dropout=0, rnn_type=config.question_rnn_type)
 
         clf_in_size = config.mmc_aggregator_dim * 2
         classifier_layers = []

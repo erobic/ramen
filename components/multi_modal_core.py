@@ -4,6 +4,33 @@ from models.rnn import RNN
 from components import nonlinearity
 
 
+class LinearWithDropout(nn.Module):
+    def __init__(self, in_s, out_s, dropout_type='1d', dropout_p=0):
+        super(LinearWithDropout, self).__init__()
+        self.linear = nn.Linear(in_s, out_s)
+        self.dropout_p = dropout_p
+        self.dropout_type = dropout_type
+        if dropout_type == '2d':
+            self.dropout = nn.Dropout2d(p=dropout_p)
+        else:
+            self.dropout = nn.Dropout(p=dropout_p)
+
+    def forward(self, x):
+        # x: B x num_objects x feat_dim
+        batch_size, num_objs, feat_dim = x.shape
+        x1 = self.linear(x)
+
+        if self.dropout_type == '2d':
+            x1 = self.dropout(x1)
+        else:
+            if self.dropout_p > 0:
+                x1_feat_dim = x1.shape[2]
+                x1 = x1.reshape(batch_size * num_objs, x1_feat_dim)
+                x1 = self.dropout(x1)
+                x1 = x1.reshape(batch_size, num_objs, x1_feat_dim)
+        return x1
+
+
 class MultiModalCore(nn.Module):
     """
     Concatenates visual and linguistic features and passes them through an MLP.
@@ -28,7 +55,8 @@ class MultiModalCore(nn.Module):
             else:
                 in_s = config.mmc_sizes[mmc_ix - 1]
             out_s = config.mmc_sizes[mmc_ix]
-            lin = nn.Linear(in_s, out_s)
+            #lin = nn.Linear(in_s, out_s)
+            lin = LinearWithDropout(in_s, out_s, dropout_p=config.mmc_dropout)
             self.mmc_layers.append(lin)
             nonlin = getattr(nonlinearity, config.mmc_nonlinearity)()
             self.mmc_layers.append(nonlin)
@@ -40,7 +68,7 @@ class MultiModalCore(nn.Module):
         if not self.config.disable_late_fusion:
             out_s += config.q_emb_dim
             self.batch_norm_before_aggregation = nn.BatchNorm1d(out_s)
-        self.aggregator_dropout = nn.Dropout(p=config.aggregator_dropout)
+        # self.aggregator_dropout = nn.Dropout(p=config.aggregator_dropout)
         self.aggregator = RNN(out_s, config.mmc_aggregator_dim, nlayers=config.mmc_aggregator_layers,
                               bidirect=True)
 
@@ -74,7 +102,8 @@ class MultiModalCore(nn.Module):
 
         # Pass through MMC
         for mmc_layer in self.mmc_layers:
-            if isinstance(mmc_layer, nn.Linear):
+            #if isinstance(mmc_layer, nn.Linear):
+            if isinstance(mmc_layer, LinearWithDropout):
                 curr_lin_layer += 1
                 mmc_out = mmc_layer(x)
                 x_new = mmc_out
@@ -97,7 +126,7 @@ class MultiModalCore(nn.Module):
             x = x.view(-1, curr_size[2])
             x = self.batch_norm_before_aggregation(x)
             x = x.view(curr_size)
-            x = self.aggregator_dropout(x)
+            #x = self.aggregator_dropout(x)
             x_aggregated = self.aggregator(x)
 
         return x, x_aggregated

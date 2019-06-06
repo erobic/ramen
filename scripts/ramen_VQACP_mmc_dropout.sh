@@ -12,10 +12,13 @@ DATA_ROOT=/hdd/robik/${DATA_SET}
 #python preprocess/compute_softscore.py --data_root ${DATA_ROOT} --top_k 1000
 
 # Run RAMEN
+RESULTS_ROOT=/hdd/robik/${DATA_SET}_results
 MODEL=Ramen
-EXPT_NAME=${MODEL}_${DATASET}
+EXPT_NAME=${MODEL}_${DATASET}_mmc_dropout_0.5
 python -u run_network.py \
 --data_set ${DATA_SET} \
 --data_root ${DATA_ROOT} \
 --expt_name ${EXPT_NAME} \
+--mmc_dropout 0.5 \
+--h5_prefix all \
 --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log

@@ -14,6 +14,7 @@ from train import train
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_root', type=str, default='/hdd/robik')
+    parser.add_argument('--data_set', type=str, required=True)
     parser.add_argument('--results_path', type=str, default='/hdd/robik/VQACP_results')
 
     parser.add_argument('--do_not_normalize_image_feats', action='store_true')
@@ -31,7 +32,7 @@ def parse_args():
     parser.add_argument('--dictionary_file', type=str, required=False, default=None)
     parser.add_argument('--glove_file', type=str, required=False, default=None)
 
-    parser.add_argument('--spatial_feature_type')
+    parser.add_argument('--spatial_feature_type', type=str, default='none')
     parser.add_argument('--spatial_feature_length', default=0, type=int)
     parser.add_argument('--h5_prefix', required=False, default='use_split', choices=['use_split', 'all'])
     parser.add_argument('--num_objects', required=False, type=int)
@@ -51,7 +52,7 @@ def parse_args():
 
     # RAMEN specific arguments
     parser.add_argument('--mmc_nonlinearity', default='Swish')
-    parser.add_argument('--mmc_dropout', default=0)
+    parser.add_argument('--mmc_dropout', default=0, type=float)
     parser.add_argument('--disable_early_fusion', action='store_true')
     parser.add_argument('--disable_late_fusion', action='store_true')
     parser.add_argument('--mmc_connection', default='residual')
@@ -90,7 +91,7 @@ def parse_args():
 
     args.vocab_dir = os.path.join(args.data_root, args.feature_subdir)
     args.feature_dir = os.path.join(args.data_root, args.feature_subdir)
-    if 'clevr' in args.data_root:
+    if 'clevr' in args.data_set.lower():
         args.token_length = 44
     else:
         args.token_length = 14
