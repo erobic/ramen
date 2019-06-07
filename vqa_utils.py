@@ -112,17 +112,10 @@ class VqaUtils:
 
     @staticmethod
     def get_question_type(full_question, use_clevr_style=False):
-        if use_clevr_style:
-            if 'program' in full_question:
-                question_type = full_question['program'][-1]['function']
-            else:
-                question_type = "unknown"
+        if 'question_type' in full_question:
+            return full_question['question_type']
         else:
-            if 'vqa_annotation' in full_question:
-                question_type = full_question['vqa_annotation']['question_type']
-            else:
-                question_type = "unknown"
-        return question_type
+            return 'unknown'
 
 
 class PerTypeMetric:

@@ -66,19 +66,22 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
     val_per_type_metric_list = []
 
     if optimizer is None:
-        lr = 5e-4
-        lr_decay_step = 2
-        lr_decay_rate = .25
-        lr_decay_epochs = range(10, 15, lr_decay_step)
-        gradual_warmup_steps = [0.5 * lr, 1.0 * lr, 1.5 * lr, 2.0 * lr]
-
-        optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
+        # lr_decay_step = 2
+        # lr_decay_rate = .25
+        # lr_decay_epochs = range(10, 15, lr_decay_step)
+        # gradual_warmup_steps = [0.5 * lr, 1.0 * lr, 1.5 * lr, 2.0 * lr]
+        optimizer = getattr(torch.optim, args.optimizer)(filter(lambda p: p.requires_grad, model.parameters()),
+                                                         lr=args.lr)
+        # optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
 
     for epoch in range(start_epoch, num_epochs):
-        if epoch < len(gradual_warmup_steps):
-            optimizer.param_groups[0]['lr'] = gradual_warmup_steps[epoch]
-        elif epoch in lr_decay_epochs:
-            optimizer.param_groups[0]['lr'] *= lr_decay_rate
+        # if epoch < len(gradual_warmup_steps):
+        #     optimizer.param_groups[0]['lr'] = gradual_warmup_steps[epoch]
+        # elif epoch in lr_decay_epochs:
+        #     optimizer.param_groups[0]['lr'] *= lr_decay_rate
+        if epoch in args.lr_milestones:
+            optimizer.param_groups[0]['lr'] /= 10.
+            print(f"Lr {optimizer.param_groups[0]['lr']}")
 
         is_best = False
         train_metrics, val_metrics = Metrics(), Metrics()

@@ -160,6 +160,13 @@ def _load_dataset(dataroot, name, img_id2val, label2ans):
     print("answers not found {}".format(answer_not_found))
     return entries
 
+def get_question_id_to_question_type(annotations):
+    qid_to_qtype=  {}
+    if 'annotations' in annotations:
+        annotations = annotations['annotations']
+    for ann in annotations:
+        qid_to_qtype[str(ann['question_id'])] = ann['question_type']
+    return qid_to_qtype
 
 class VQAFeatureDataset(Dataset):
     def __init__(self, name, dictionary, data_root, adaptive=False, args=None):
@@ -206,6 +213,11 @@ class VQAFeatureDataset(Dataset):
         self.s_dim = spatials.shape[1 if self.adaptive else 2]
         self.printed = False
         with open(os.path.join(args.data_root, 'questions', name + "_questions.json")) as qf:
+            if 'test' not in name:
+                annotations = json.load(open(os.path.join(args.data_root, 'questions', name+"_annotations.json")))
+                qid_to_qtype = get_question_id_to_question_type(annotations)
+            else:
+                qid_to_qtype = None
             print("Loading questions...")
             qns = json.load(qf)
             if 'questions' in qns:
@@ -213,6 +225,8 @@ class VQAFeatureDataset(Dataset):
             self.question_map = {}
             for q in qns:
                 self.question_map[q['question_id']] = q
+                if qid_to_qtype  is not None:
+                    q['question_type'] = qid_to_qtype[str(q['question_id'])]
 
     def tokenize(self, max_length):
         """Tokenizes the questions.
@@ -301,4 +315,3 @@ class VQAFeatureDataset(Dataset):
 
     def __len__(self):
         return len(self.entries)
-        # return 3000

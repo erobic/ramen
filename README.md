@@ -3,8 +3,8 @@
 - Add scripts to just test stuff
 
 Let ```ROOT=/hdd/robik/```
-### Setting up visual features for VQAv2/CVQA/VQACP
-Let ```DATA_ROOT=${ROOT}/${DATASET}```
+### Setting up visual features for VQA2, CVQA, VQACP and TDIUC
+Let ```DATA_ROOT=${ROOT}/${DATASET}```, where ```DATASET``` has one of the following values: VQA, CVQA, VQACP or TDIUC 
 1. Download train+val features into ```${DATA_DIR}``` [using this link](https://imagecaption.blob.core.windows.net/imagecaption/trainval_36.zip)
 so that you have this file: ```${DATA_DIR}/trainval_36.zip```
 2. Extract the zip file, so that you have ```${DATA_DIR}/trainval_36/trainval_resnet101_faster_rcnn_genome_36.tsv```
@@ -13,11 +13,12 @@ so that you have this file: ```${DATA_DIR}/trainval_36.zip```
 5. Execute the following script to extract the zip files and create hdf5 files ```./tsv_to_h5.sh``` 
     - Train and val features are extracted to ```${DATA_ROOT}/features/trainval.hdf5```. The script will create softlinks ```train.hdf5``` and ```val.hdf5```, pointing to ```trainval.hdf5```.
     - Test features are extracted to ```${DATA_ROOT}/features/test.hdf5```
-6. Create the symbolic links/shortcuts:
-    - ```${DATA_ROOT}/features/test_dev.hdf5``` (a shortcut to ```${DATA_ROOT}/features/test.hdf5```)
-    - ```${DATA_ROOT}/features/test_dev_ids_map.json``` (a shortcut to ```${DATA_ROOT}/features/test_ids_map.json```)
+6. Create symbolic links for `test_dev` split, which point to `test` files:
+    - ```${DATA_ROOT}/features/test_dev.hdf5```, pointing to ```${DATA_ROOT}/features/test.hdf5```
+    - ```${DATA_ROOT}/features/test_dev_ids_map.json```, pointing to ```${DATA_ROOT}/features/test_ids_map.json```
+7. The features for additional images present in TDIUC are not present in the above files, so please refer to TDIUC section to set up those extra features.
 
-##### VQAv2
+##### VQA2
 1. Download questions and annotations from [this link](https://visualqa.org/download.html).
 2. Rename question and annotation files to ```${SPLIT}_questions.json``` and ```${SPLIT}_annotations.json``` and copy them to $ROOT/VQA2/questions. You should have the following files:
     - ```$ROOT/VQA2/questions/train_questions.json```
@@ -28,6 +29,22 @@ so that you have this file: ```${DATA_DIR}/trainval_36.zip```
     - ```$ROOT/VQA2/questions/test_dev_questions.json```
 3. Download [glove.6B.zip](http://nlp.stanford.edu/data/glove.6B.zip), extract it and copy ```glove.6B.300d.txt``` to ```${DATA_ROOT}/glove/```
 4. Execute ```./ramen_VQA2.sh```. This will first preprocess all questions+annotations files and then start training the model.
+
+
+##### TDIUC
+###### Setting up visual features
+1. 
+
+##### Remaining Steps:
+1. Download questions and annotations from [this link](https://kushalkafle.com/data/TDIUC.zip)
+2. Unzip ```TDIUC.zip```
+3. Rename ```TDIUC/Annotations/mscoco_train2014_annotations.json``` to ```train_annotations.json``` and ```TDIUC/Annotations/mscoco_val2014_annotations.json``` to ```val_annotations.json```
+4. Rename ```TDIUC/Questions/OpenEnded_mscoco_train2014_questions.json``` to ```train_questions.json``` and ```TDIUC/Questions/OpenEnded_mscoco_val2014_questions.json``` to ```val_questions.json```
+5. Copy all of the questions+annotations files to ```$ROOT/TDIUC/questions```. You should have the following files:
+    - ```$ROOT/TDIUC/questions/train_questions.json```
+    - ```$ROOT/TDIUC/questions/train_annotations.json```
+    - ```$ROOT/TDIUC/questions/val_questions.json```
+    - ```$ROOT/TDIUC/questions/val_annotations.json```
 
 
 ##### CVQA
@@ -96,7 +113,7 @@ Please refer to the README file of that repository for detailed instructions to 
 `./scripts/preprocess/preprocess_questions.sh`
 
 #### Step 5 - Extract image features
-##### For VQAv1/VQAv2/C-VQA and VQA-CP
+##### For VQAv1/VQA2/C-VQA and VQA-CP
 Download train+val features into ```${FEATURES_DIR}``` from the following link:
 https://imagecaption.blob.core.windows.net/imagecaption/trainval_36.zip
 

@@ -71,6 +71,9 @@ def parse_args():
     # RN specific arguments
     parser.add_argument('--interactor_sizes', type=int, nargs='+', default=[512, 512, 512, 512])
     parser.add_argument('--aggregator_sizes', type=int, nargs='+', default=[512, 512])
+    parser.add_argument('--optimizer', type=str, default='Adamax')
+    parser.add_argument('--lr', type=float, default=2e-3)
+    parser.add_argument('--lr_milestones', type=int, nargs='+', default=[10, 20, 30])
 
     args = parser.parse_args()
 
@@ -138,7 +141,9 @@ def train_model():
         print('Loading %s' % resume_pth)
         model_data = torch.load(resume_pth)
         model.load_state_dict(model_data['model_state_dict'])
-        optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()))
+        optimizer = getattr(torch.optim, args.optimizer)(filter(lambda p: p.requires_grad, model.parameters()),
+                                                         lr=args.lr)
+        #optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()))
         optimizer.load_state_dict(model_data['optimizer_state_dict'])
         epoch = model_data['epoch'] + 1
         best_val_score = float(model_data['best_val_score'])
