@@ -28,7 +28,7 @@ class Ramen(nn.Module):
         self.pre_classification_layers = nn.Sequential(*classifier_layers)
         self.classifier = nn.Linear(out_s, config.num_ans_candidates)
 
-    def forward(self, v, b, q, a=None):
+    def forward(self, v, b, q, a=None, qlen=None):
         """Forward
 
         v: [batch, num_objs, v_dim]
@@ -40,7 +40,7 @@ class Ramen(nn.Module):
         batch_size, num_objs, v_emb_dim = v.size()
         b = b[:, :, :4]
         q = self.w_emb(q)
-        q_words_emb, q_emb = self.q_emb(q)
+        q_emb = self.q_emb(q, qlen)
         mmc, mmc_aggregated = self.mmc_net(v, b, q_emb)  # B x num_objs x num_hid and B x num_hid
         final_emb = self.pre_classification_layers(mmc_aggregated)
         logits = self.classifier(final_emb)

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import numpy as np
+from torch.nn.utils.rnn import pack_padded_sequence
 
 
 class WordEmbedding(nn.Module):
@@ -20,9 +21,7 @@ class WordEmbedding(nn.Module):
 
     def init_embedding(self, np_file):
         weight_init = torch.from_numpy(np.load(np_file))
-        print("ntoken {} weight_init {}".format(self.ntoken, weight_init.shape))
         assert weight_init.shape == (self.ntoken, self.emb_dim)
-
         self.emb.weight.data[:self.ntoken] = weight_init
 
     def forward(self, x):
@@ -85,51 +84,28 @@ class UpDnQuestionEmbedding(nn.Module):
 
 
 class QuestionEmbedding(nn.Module):
-    def __init__(self, in_dim, num_hid, nlayers=1, bidirect=True, dropout=0, rnn_type='GRU',
-                 use_pack_padded_sequence=False):
+    def __init__(self, in_dim, num_hid, nlayers=1, bidirect=True, dropout=0, rnn_type='GRU'):
         """Module for question embedding
         """
         super(QuestionEmbedding, self).__init__()
         assert rnn_type == 'LSTM' or rnn_type == 'GRU'
         rnn_cls = nn.LSTM if rnn_type == 'LSTM' else nn.GRU
-        self.bidirect = bidirect
-        self.ndirections = 1 + int(bidirect)
-        if bidirect:
-            num_hid = int(num_hid / 2)
-        self.rnn = rnn_cls(
-            in_dim, num_hid, nlayers,
-            bidirectional=bidirect,
-            dropout=dropout,
-            batch_first=True)
-
         self.in_dim = in_dim
+        num_hid = int(num_hid/2) if bidirect and rnn_type == 'LSTM' else num_hid
         self.num_hid = num_hid
-        self.nlayers = nlayers
         self.rnn_type = rnn_type
-        self.use_pack_padded_sequence = use_pack_padded_sequence
+        self.rnn = rnn_cls(in_dim, num_hid, nlayers, bidirectional=bidirect, dropout=dropout, batch_first=True)
 
-    def init_hidden(self, batch):
-        # just to get the type of tensor
-        weight = next(self.parameters()).data
-        hid_shape = (self.nlayers * self.ndirections, batch, self.num_hid)
-        if self.rnn_type == 'LSTM':
-            return (Variable(weight.new(*hid_shape).zero_()),
-                    Variable(weight.new(*hid_shape).zero_()))
-        else:
-            return Variable(weight.new(*hid_shape).zero_())
-
-    def forward(self, x):
+    def forward(self, q, qlen=None):
         # x: [batch, sequence, in_dim]
-        batch = x.size(0)
-        hidden = self.init_hidden(batch)
-        self.rnn.flatten_parameters()
+        sorted_qlen_ixs = torch.argsort(qlen, descending=True)
+        sorted_q = q[sorted_qlen_ixs]
+        sorted_qlen = qlen[sorted_qlen_ixs]
+        q_packed = pack_padded_sequence(sorted_q, sorted_qlen, batch_first=True)
 
-        q_words_emb, hidden = self.rnn(x, hidden)  # q_words_emb: B x num_words x gru_dim, hidden: 1 x B x gru_dim
-
-        if self.bidirect:
-            forward_ = q_words_emb[:, -1, :self.num_hid]
-            backward = q_words_emb[:, 0, self.num_hid:]
-            hid = torch.cat((forward_, backward), dim=1)
-            return q_words_emb, hid
-        else:
-            return q_words_emb, q_words_emb[:, -1]
+        out, (hid, c) = self.rnn(q_packed)
+        if self.rnn_type == 'LSTM':
+            hid = torch.transpose(hid, 0, 1)
+        hid = torch.flatten(hid, start_dim=1)
+        hid[sorted_qlen_ixs] = hid[0:len(hid)]
+        return hid

@@ -27,7 +27,7 @@ class RelationNetwork(nn.Module):
         self.relation_module = PairwiseRelationModule(config.v_dim + config.q_emb_dim, config.interactor_sizes, config.aggregator_sizes)
         self.classifier = nn.Linear(config.aggregator_sizes[-1], config.num_ans_candidates)
 
-    def forward(self, v, b, q, a=None):
+    def forward(self, v, b, q, a=None, qlen=None):
         """Forward
 
         v: [batch, num_objs, v_dim]

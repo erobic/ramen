@@ -15,7 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_root', type=str, default='/hdd/robik')
     parser.add_argument('--data_set', type=str, required=True)
-    parser.add_argument('--results_path', type=str, default='/hdd/robik/VQACP_results')
+    parser.add_argument('--results_path', type=str, default=None)
 
     parser.add_argument('--do_not_normalize_image_feats', action='store_true')
 
@@ -64,7 +64,6 @@ def parse_args():
     parser.add_argument('--classifier_sizes', type=int, nargs='+', default=[2048])
     parser.add_argument('--classifier_nonlinearity', type=str, default='Swish')
     parser.add_argument('--classifier_dropout', type=float, default=0.5)
-    parser.add_argument('--use_pack_padded_sequence', action='store_true')
 
     # BAN specific arguments
     parser.add_argument('--glimpse', type=int, default=8)
@@ -76,6 +75,8 @@ def parse_args():
     args = parser.parse_args()
 
     args.dataroot = args.data_root
+    if args.results_path is None:
+        args.results_path = args.dataroot + '_results'
     args.answers_available = bool(args.answers_available)
 
     # Handle experiment save/resume
@@ -92,9 +93,9 @@ def parse_args():
     args.vocab_dir = os.path.join(args.data_root, args.feature_subdir)
     args.feature_dir = os.path.join(args.data_root, args.feature_subdir)
     if 'clevr' in args.data_set.lower():
-        args.token_length = 44
+        args.token_length = 45
     else:
-        args.token_length = 14
+        args.token_length = 30
 
     if args.dictionary_file is None:
         args.dictionary_file = args.vocab_dir + '/dictionary.pkl'

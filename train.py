@@ -84,14 +84,15 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
         train_metrics, val_metrics = Metrics(), Metrics()
 
         if not args.test:
-            for i, (visual_features, boxes, question_features, answers, question_types, question_ids) in enumerate(
-                    train_loader):
+            for i, (visual_features, boxes, question_features, answers, question_types, question_ids,
+                    question_lengths) in enumerate(
+                train_loader):
                 visual_features = Variable(visual_features.float()).cuda()
                 boxes = Variable(boxes.float()).cuda()
                 question_features = Variable(question_features).cuda()
                 answers = Variable(answers).cuda()
 
-                pred = model(visual_features, boxes, question_features, answers)
+                pred = model(visual_features, boxes, question_features, answers, question_lengths)
                 loss = instance_bce_with_logits(pred, answers)
                 loss.backward()
                 train_metrics.update_per_batch(model, answers, loss, pred, visual_features.shape[0])
@@ -143,7 +144,8 @@ def evaluate(model, dataloader, epoch, args, val_metrics):
 
     all_preds = []
 
-    for visual_features, boxes, question_features, answers, question_types, question_ids in iter(dataloader):
+    for visual_features, boxes, question_features, answers, question_types, question_ids, question_lengths in iter(
+            dataloader):
         visual_features = Variable(visual_features.float()).cuda()
         boxes = Variable(boxes.float()).cuda()
         question_features = Variable(question_features).cuda()
@@ -151,7 +153,7 @@ def evaluate(model, dataloader, epoch, args, val_metrics):
         if not args.test or args.test_has_answers:
             answers = answers.cuda()
 
-        pred = model(visual_features, boxes, question_features, None)
+        pred = model(visual_features, boxes, question_features, None, question_lengths)
 
         if not args.test or args.test_has_answers:
             loss = instance_bce_with_logits(pred, answers)

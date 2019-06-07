@@ -40,7 +40,7 @@ class Ban(nn.Module):
         self.drop = nn.Dropout(.5)
         self.tanh = nn.Tanh()
 
-    def forward(self, v, b, q, labels):
+    def forward(self, v, b, q, labels, qlen):
         """Forward
 
         v: [batch, num_objs, obj_dim]

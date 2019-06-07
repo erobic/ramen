@@ -89,7 +89,7 @@ def combine_trainval(dataroot, force_create=False):
             train_questions = train_questions['questions']
         if 'questions' in val_questions:
             val_questions = val_questions['questions']
-        trainval_questions = train_questions+val_questions
+        trainval_questions = train_questions + val_questions
         json.dump(trainval_questions, open(trainval_qns_file, 'w'))
         print(f"Saved {trainval_qns_file}")
 
@@ -222,8 +222,9 @@ class VQAFeatureDataset(Dataset):
         """
         for entry in self.entries:
             tokens = self.dictionary.tokenize(entry['question'], False)
-            # if not self.args.use_pack_padded_sequence:
-            tokens = tokens[:max_length]
+            entry['q_len'] = len(tokens)
+            if len(tokens) > max_length:
+                tokens = tokens[:max_length]
             if len(tokens) < max_length:
                 # Note here we pad in front of the sentence
                 padding = [self.dictionary.padding_idx] * (max_length - len(tokens))
@@ -271,10 +272,10 @@ class VQAFeatureDataset(Dataset):
         self.load_h5()
         entry = self.entries[index]
         feature_ix = entry['image']
-        features = self.features[int(feature_ix)] # num_objects x  2048
+        features = self.features[int(feature_ix)]  # num_objects x  2048
         # if not self.args.do_not_normalize_image_feats:
         #     features = VqaUtils.normalize_features(features)
-        spatials = self.spatials[int(feature_ix)] # num_objects x 6
+        spatials = self.spatials[int(feature_ix)]  # num_objects x 6
         curr_entry = VqaUtils.get_image_features(features, spatials,
                                                  self.args.spatial_feature_type,
                                                  self.args.spatial_feature_length,
@@ -296,7 +297,7 @@ class VQAFeatureDataset(Dataset):
             if labels is not None:
                 target.scatter_(0, labels, scores)
         self.printed = True
-        return curr_entry, spatials, question, target, question_type, question_id
+        return curr_entry, spatials, question, target, question_type, question_id, entry['q_len']
 
     def __len__(self):
         return len(self.entries)

@@ -24,7 +24,7 @@ class UpDn(nn.Module):
         self.classifier = SimpleClassifier(
             config.num_hid, config.num_hid * 2, config.num_ans_candidates, 0.5)
 
-    def forward(self, v, b, q, labels):
+    def forward(self, v, b, q, labels, qlen):
         """Forward
 
         v: [batch, num_objs, obj_dim]

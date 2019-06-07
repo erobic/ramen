@@ -1,42 +1,12 @@
-./scripts/ramen_VQACP_all_LSTM.sh: line 16: /Ramen_VQACP_1000_all_LSTM.log: Permission denied
-./scripts/ramen_VQACP_all_LSTM.sh: line 16: /Ramen_VQACP_1000_all_LSTM.log: Permission denied
 Traceback (most recent call last):
-  File "run_network.py", line 166, in <module>
+  File "run_network.py", line 172, in <module>
     train_model()
-  File "run_network.py", line 112, in train_model
-    train_dset = VQAFeatureDataset(args.train_split, dictionary, data_root=args.dataroot, args=args)
-  File "/mnt/0A49FDC312D17063/robik/projects/ramen/dataset.py", line 182, in __init__
-    with open(os.path.join(args.feature_dir, '{}_ids_map.json'.format(h5_name))) as f:
-FileNotFoundError: [Errno 2] No such file or directory: '/hdd/robik/VQACP_1000/features/train_ids_map.json'
-./scripts/ramen_VQACP_all_LSTM.sh: line 23: 24722 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${EXPT_NAME} --question_rnn_type LSTM --h5_prefix all --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log
-./scripts/ramen_VQACP_all_LSTM.sh: line 23: 24783 Killed                  python -u run_network.py --data_root ${DATA_ROOT} --expt_name ${EXPT_NAME} --question_rnn_type LSTM --h5_prefix all --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log
-./scripts/ramen_VQACP_mmc_dropout.sh: line 17: /Ramen__mmc_dropout_0.5.log: Permission denied
-./scripts/ramen_VQACP_mmc_dropout.sh: line 17: /Ramen__mmc_dropout_0.5.log: Permission denied
-Traceback (most recent call last):
-  File "run_network.py", line 171, in <module>
-    train_model()
-  File "run_network.py", line 117, in train_model
-    train_dset = VQAFeatureDataset(args.train_split, dictionary, data_root=args.dataroot, args=args)
-  File "/mnt/0A49FDC312D17063/robik/projects/ramen/dataset.py", line 183, in __init__
-    with open(os.path.join(args.feature_dir, '{}_ids_map.json'.format(h5_name))) as f:
-FileNotFoundError: [Errno 2] No such file or directory: '/hdd/robik/VQACP_1000/features/train_ids_map.json'
-./scripts/ramen_VQACP_mmc_dropout2d.sh: line 24: 32321 Killed                  python -u run_network.py --data_set ${DATA_SET} --data_root ${DATA_ROOT} --expt_name ${EXPT_NAME} --mmc_dropout 0.5 --h5_prefix all --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log
-./scripts/ramen_VQACP_mmc_dropout2d.sh: line 24: 32486 Killed                  python -u run_network.py --data_set ${DATA_SET} --data_root ${DATA_ROOT} --expt_name ${EXPT_NAME} --mmc_dropout 0.5 --h5_prefix all --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log
-./scripts/ramen_VQACP_mmc_dropout.sh: line 24: 32123 Killed                  python -u run_network.py --data_set ${DATA_SET} --data_root ${DATA_ROOT} --expt_name ${EXPT_NAME} --mmc_dropout 0.5 --h5_prefix all --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log
-Creating dictionary...
-dictionary dumped to /hdd/robik/VQACP_1000/features/dictionary.pkl
-loading dictionary from /hdd/robik/VQACP_1000/features/dictionary.json
-embedding dim is 300
-Created dictionary...
-Computing softscore ...
-Computed softscore!
-Traceback (most recent call last):
-  File "run_network.py", line 171, in <module>
-    train_model()
-  File "run_network.py", line 117, in train_model
-    train_dset = VQAFeatureDataset(args.train_split, dictionary, data_root=args.dataroot, args=args)
-  File "/mnt/0A49FDC312D17063/robik/projects/ramen/dataset.py", line 183, in __init__
-    with open(os.path.join(args.feature_dir, '{}_ids_map.json'.format(h5_name))) as f:
-FileNotFoundError: [Errno 2] No such file or directory: '/hdd/robik/VQACP_1000/features/train_ids_map.json'
-./scripts/ramen_VQACP_mmc_dropout.sh: line 24:  1153 Killed                  python -u run_network.py --data_set ${DATA_SET} --data_root ${DATA_ROOT} --expt_name ${EXPT_NAME} --mmc_dropout 0.5 --h5_prefix all --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log
-./scripts/ramen_VQACP_mmc_dropout2d.sh: line 24:  1096 Killed                  python -u run_network.py --data_set ${DATA_SET} --data_root ${DATA_ROOT} --expt_name ${EXPT_NAME} --mmc_dropout 0.5 --h5_prefix all --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log
+  File "run_network.py", line 153, in train_model
+    train(model, train_loader, eval_loader, args.epochs, optimizer, args, epoch, best_val_score, best_epoch)
+  File "/hdd/robik/projects/ramen/train.py", line 97, in train
+    loss.backward()
+  File "/home/robik/anaconda/envs/vqa2/lib/python3.6/site-packages/torch/tensor.py", line 102, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/home/robik/anaconda/envs/vqa2/lib/python3.6/site-packages/torch/autograd/__init__.py", line 90, in backward
+    allow_unreachable=True)  # allow_unreachable flag
+RuntimeError: select(): index 14 out of range for tensor of size [14, 64, 300] at dimension 0
