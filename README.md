@@ -59,3 +59,13 @@ Please refer to the README file of that repository for detailed instructions to 
 ##### Testing on pre-trained model
 1. Download pre-trained model from []() and put it into ```${ROOT}/RAMEN_CKPTS```
 2. Execute ```./scripts/ramen_CLEVR_test.sh```
+
+## Citation
+```
+@InProceedings{shrestha2019answer,
+    author = {Shrestha, Robik and Kafle, Kushal and Kanan, Christopher},
+    title = {Answer Them All! Toward Universal Visual Question Answering Models},
+    booktitle = {CVPR},
+    year = {2019}
+}
+```
