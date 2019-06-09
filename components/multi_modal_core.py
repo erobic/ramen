@@ -19,15 +19,8 @@ class LinearWithDropout(nn.Module):
         # x: B x num_objects x feat_dim
         batch_size, num_objs, feat_dim = x.shape
         x1 = self.linear(x)
-
-        if self.dropout_type == '2d':
+        if self.dropout_p > 0:
             x1 = self.dropout(x1)
-        else:
-            if self.dropout_p > 0:
-                x1_feat_dim = x1.shape[2]
-                x1 = x1.reshape(batch_size * num_objs, x1_feat_dim)
-                x1 = self.dropout(x1)
-                x1 = x1.reshape(batch_size, num_objs, x1_feat_dim)
         return x1
 
 
@@ -43,6 +36,7 @@ class MultiModalCore(nn.Module):
         self.q_emb_dim = config.q_emb_dim
         self.mmc_sizes = config.mmc_sizes
         self.mmc_layers = []
+        self.input_dropout = nn.Dropout(p=config.input_dropout)
 
         # Create MLP with early fusion in the first layer followed by batch norm
         for mmc_ix in range(len(config.mmc_sizes)):
@@ -55,7 +49,7 @@ class MultiModalCore(nn.Module):
             else:
                 in_s = config.mmc_sizes[mmc_ix - 1]
             out_s = config.mmc_sizes[mmc_ix]
-            #lin = nn.Linear(in_s, out_s)
+            # lin = nn.Linear(in_s, out_s)
             lin = LinearWithDropout(in_s, out_s, dropout_p=config.mmc_dropout)
             self.mmc_layers.append(lin)
             nonlin = getattr(nonlinearity, config.mmc_nonlinearity)()
@@ -92,6 +86,7 @@ class MultiModalCore(nn.Module):
             x = torch.cat([v, q], dim=2)  # B x num_objs x (2 * emb_size)
         else:
             x = v
+        x = self.input_dropout(x)
         num_objs = x.shape[1]
         emb_size = x.shape[2]
         x = x.view(-1, emb_size)
@@ -102,7 +97,7 @@ class MultiModalCore(nn.Module):
 
         # Pass through MMC
         for mmc_layer in self.mmc_layers:
-            #if isinstance(mmc_layer, nn.Linear):
+            # if isinstance(mmc_layer, nn.Linear):
             if isinstance(mmc_layer, LinearWithDropout):
                 curr_lin_layer += 1
                 mmc_out = mmc_layer(x)
@@ -126,7 +121,13 @@ class MultiModalCore(nn.Module):
             x = x.view(-1, curr_size[2])
             x = self.batch_norm_before_aggregation(x)
             x = x.view(curr_size)
-            #x = self.aggregator_dropout(x)
+            # x = self.aggregator_dropout(x)
             x_aggregated = self.aggregator(x)
 
         return x, x_aggregated
+
+    def update_dropouts(self, input_dropout_p=None, hidden_dropout_p=None):
+        self.input_dropout.p = input_dropout_p
+        for mmc_layer in self.mmc_layers:
+            if isinstance(mmc_layer, LinearWithDropout):
+                mmc_layer.dropout.p = hidden_dropout_p

@@ -8,6 +8,7 @@ from torch.autograd import Variable
 
 from vqa_utils import VqaUtils, PerTypeMetric
 from metrics import Metrics, accumulate_metrics
+import numpy as np
 
 
 def instance_bce_with_logits(logits, labels):
@@ -57,6 +58,14 @@ def save_metrics_n_model(metrics, model, optimizer, args, is_best):
     return metrics_n_model
 
 
+def update_curriculum_dropout(args, model, iter_num):
+    curr_input_dropout = args.input_dropout * (1 - np.exp(-args.curriculum_dropout_gamma * iter_num))
+    curr_hidden_dropout = args.mmc_dropout * (1 - np.exp(-args.curriculum_dropout_gamma * iter_num))
+    curr_classifier_dropout = args.classifier_dropout * (1 - np.exp(-args.curriculum_dropout_gamma * iter_num))
+    model.update_dropouts(input_dropout_p=curr_input_dropout, hidden_dropout_p=curr_hidden_dropout,
+                          classifier_dropout_p=curr_classifier_dropout)
+
+
 def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_epoch=0, best_val_score=0,
           best_val_epoch=0):
     """
@@ -66,14 +75,15 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
     val_per_type_metric_list = []
 
     if optimizer is None:
-        # lr_decay_step = 2
-        # lr_decay_rate = .25
         # lr_decay_epochs = range(10, 15, lr_decay_step)
         # gradual_warmup_steps = [0.5 * lr, 1.0 * lr, 1.5 * lr, 2.0 * lr]
         optimizer = getattr(torch.optim, args.optimizer)(filter(lambda p: p.requires_grad, model.parameters()),
                                                          lr=args.lr)
         # optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
 
+    iter_num = 0
+    if args.test and start_epoch == num_epochs:
+        start_epoch = num_epochs - 1
     for epoch in range(start_epoch, num_epochs):
         # if epoch < len(gradual_warmup_steps):
         #     optimizer.param_groups[0]['lr'] = gradual_warmup_steps[epoch]
@@ -88,12 +98,14 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
 
         if not args.test:
             for i, (visual_features, boxes, question_features, answers, question_types, question_ids,
-                    question_lengths) in enumerate(
-                train_loader):
+                    question_lengths) in enumerate(train_loader):
                 visual_features = Variable(visual_features.float()).cuda()
                 boxes = Variable(boxes.float()).cuda()
                 question_features = Variable(question_features).cuda()
                 answers = Variable(answers).cuda()
+
+                if args.use_curriculum_dropout:
+                    update_curriculum_dropout(args, model, iter_num)
 
                 pred = model(visual_features, boxes, question_features, answers, question_lengths)
                 loss = instance_bce_with_logits(pred, answers)
@@ -102,12 +114,14 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
                 nn.utils.clip_grad_norm_(model.parameters(), 50)
                 optimizer.step()
                 optimizer.zero_grad()
-
+                iter_num += 1
                 if i % 1000 == 0:
                     train_metrics.print(epoch)
-        train_metrics.update_per_epoch()
+            train_metrics.update_per_epoch()
 
         if None != val_loader:  # TODO: "val_loader is not None' was not working for some reason
+            print("Starting the test ... ")
+
             model.train(False)
             val_preds, val_per_type_metric = evaluate(model, val_loader, epoch, args, val_metrics)
 
@@ -117,7 +131,7 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
                 best_val_epoch = epoch
                 is_best = True
 
-            save_val_metrics = not args.test or args.test_has_answers
+            save_val_metrics = not args.test or not args.test_does_not_have_answers
             if save_val_metrics:
                 val_per_type_metric_list.append(val_per_type_metric.get_json())
                 print("Best val score {} at epoch {}".format(best_val_score, best_val_epoch))
@@ -153,12 +167,12 @@ def evaluate(model, dataloader, epoch, args, val_metrics):
         boxes = Variable(boxes.float()).cuda()
         question_features = Variable(question_features).cuda()
 
-        if not args.test or args.test_has_answers:
+        if not args.test or not args.test_does_not_have_answers:
             answers = answers.cuda()
 
         pred = model(visual_features, boxes, question_features, None, question_lengths)
 
-        if not args.test or args.test_has_answers:
+        if not args.test or not args.test_does_not_have_answers:
             loss = instance_bce_with_logits(pred, answers)
             val_metrics.update_per_batch(model, answers, loss, pred, visual_features.shape[0])
 
@@ -171,7 +185,7 @@ def evaluate(model, dataloader, epoch, args, val_metrics):
                 'question_id': int(question_ids[curr_ix].data),
                 'answer': str(pred_ans)
             })
-            if not args.test or args.test_has_answers:
+            if not args.test or not args.test_does_not_have_answers:
                 per_type_metric.update_for_question_type(question_types[curr_ix],
                                                          answers[curr_ix].cpu().data.numpy(),
                                                          pred[curr_ix].cpu().data.numpy())

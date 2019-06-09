@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from dataset import Dictionary, VQAFeatureDataset
 from models import models
 from train import train
+import math
 
 
 def parse_args():
@@ -46,13 +47,12 @@ def parse_args():
 
     parser.add_argument('--test', action='store_true')
     parser.add_argument('--test_split', type=str, default='val')
-    parser.add_argument('--test_has_answers', action='store_true')
+    parser.add_argument('--test_does_not_have_answers', action='store_true')
     parser.add_argument('--train_split', type=str, default='train')
     parser.add_argument('--question_rnn_type', type=str, default='GRU')
 
     # RAMEN specific arguments
     parser.add_argument('--mmc_nonlinearity', default='Swish')
-    parser.add_argument('--mmc_dropout', default=0, type=float)
     parser.add_argument('--disable_early_fusion', action='store_true')
     parser.add_argument('--disable_late_fusion', action='store_true')
     parser.add_argument('--mmc_connection', default='residual')
@@ -63,6 +63,8 @@ def parse_args():
                         help='Layer sizes for Multi Modal Core')
     parser.add_argument('--classifier_sizes', type=int, nargs='+', default=[2048])
     parser.add_argument('--classifier_nonlinearity', type=str, default='Swish')
+    parser.add_argument('--input_dropout', default=0, type=float)
+    parser.add_argument('--mmc_dropout', default=0, type=float)
     parser.add_argument('--classifier_dropout', type=float, default=0.5)
 
     # BAN specific arguments
@@ -73,7 +75,9 @@ def parse_args():
     parser.add_argument('--aggregator_sizes', type=int, nargs='+', default=[512, 512])
     parser.add_argument('--optimizer', type=str, default='Adamax')
     parser.add_argument('--lr', type=float, default=2e-3)
-    parser.add_argument('--lr_milestones', type=int, nargs='+', default=[10, 20, 30])
+    parser.add_argument('--lr_milestones', type=int, nargs='+', default=[])
+    parser.add_argument('--use_curriculum_dropout', action='store_true')
+    parser.add_argument('--curriculum_dropout_T', type=int)
 
     args = parser.parse_args()
 
@@ -83,6 +87,8 @@ def parse_args():
     args.answers_available = bool(args.answers_available)
 
     # Handle experiment save/resume
+    if args.resume_expt_name is not None:
+        args.resume = True
     if args.resume_expt_name is None:
         args.resume_expt_name = args.expt_name
     if args.resume_expt_dir is None:
@@ -116,9 +122,18 @@ def load_bottom_up_dictionary(data_root, features_subdir):
     return dictionary
 
 
+def init_curriculum_dropout(args, train_dset):
+    if args.use_curriculum_dropout:
+        train_dset_len = len(train_dset)
+        if args.curriculum_dropout_T is None:
+            args.curriculum_dropout_T = math.ceil(args.epochs * train_dset_len / args.batch_size)
+        args.curriculum_dropout_gamma = 10 / args.curriculum_dropout_T
+
+
 def train_model():
     if not args.test:
         train_dset = VQAFeatureDataset(args.train_split, dictionary, data_root=args.dataroot, args=args)
+        init_curriculum_dropout(args, train_dset)
     else:
         train_dset = None
     val_dset = VQAFeatureDataset(args.test_split, dictionary, data_root=args.dataroot, args=args)
@@ -128,7 +143,7 @@ def train_model():
     args.v_dim = val_dset.v_dim
     model = getattr(models, args.model)(args)
 
-    model = nn.DataParallel(model).cuda()
+    model = model.cuda()
     print("Our kickass model {}".format(model))
 
     optimizer = None
@@ -138,16 +153,19 @@ def train_model():
 
     if args.resume:
         resume_pth = os.path.join(args.expt_resume_dir, '{}-model.pth'.format(args.resume_expt_type))
-        print('Loading %s' % resume_pth)
+        print('Resuming from %s ...' % resume_pth)
         model_data = torch.load(resume_pth)
+        if list(model_data['model_state_dict'].keys())[0].startswith('module'):
+            model = nn.DataParallel(model)
         model.load_state_dict(model_data['model_state_dict'])
         optimizer = getattr(torch.optim, args.optimizer)(filter(lambda p: p.requires_grad, model.parameters()),
                                                          lr=args.lr)
-        #optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()))
+        # optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()))
         optimizer.load_state_dict(model_data['optimizer_state_dict'])
         epoch = model_data['epoch'] + 1
         best_val_score = float(model_data['best_val_score'])
         best_epoch = model_data['best_epoch']
+        print("Resumed!")
 
     if not args.test:
         train_loader = DataLoader(train_dset, batch_size, shuffle=True, num_workers=16)

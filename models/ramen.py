@@ -45,3 +45,9 @@ class Ramen(nn.Module):
         final_emb = self.pre_classification_layers(mmc_aggregated)
         logits = self.classifier(final_emb)
         return logits
+
+    def update_dropouts(self, input_dropout_p=None, hidden_dropout_p=None, classifier_dropout_p=None):
+        self.mmc_net.update_dropouts(input_dropout_p, hidden_dropout_p)
+        for l in self.pre_classification_layers:
+            if isinstance(l, nn.Dropout):
+                l.p = classifier_dropout_p

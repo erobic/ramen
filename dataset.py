@@ -265,7 +265,10 @@ class VQAFeatureDataset(Dataset):
                     entry['answer']['scores'] = None
 
     def close_h5_file(self):
-        self.hf.close()
+        try:
+            self.hf.close()
+        except:
+            pass
 
     def load_h5(self):
         if not hasattr(self, 'hf'):

@@ -15,11 +15,11 @@ DATA_ROOT=${ROOT}/${DATA_SET}
 RESULTS_ROOT=${ROOT}/${DATA_SET}_results
 mkdir -p ${RESULTS_ROOT}
 MODEL=Ramen
-EXPT_NAME=${MODEL}_${DATA_SET}_SGD
-CUDA_VISIBLE_DEVICES=2 python -u run_network.py \
+EXPT_NAME=${MODEL}_${DATA_SET}_dropout
+CUDA_VISIBLE_DEVICES=3 python -u run_network.py \
 --data_set ${DATA_SET} \
 --data_root ${DATA_ROOT} \
 --expt_name ${EXPT_NAME} \
---lr 0.1 \
---optimizer SGD \
+--mmc_dropout 0.9 \
+--classifier_dropout 0.9 \
 --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log

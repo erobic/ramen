@@ -14,11 +14,10 @@ DATA_ROOT=${ROOT}/${DATA_SET}
 # Train the model
 RESULTS_ROOT=${ROOT}/${DATA_SET}_results
 MODEL=Ramen
-EXPT_NAME=${MODEL}_${DATA_SET}_dropouts_0.2
-CUDA_VISIBLE_DEVICES=2 python -u run_network.py \
+EXPT_NAME=${MODEL}_${DATA_SET}_128
+CUDA_VISIBLE_DEVICES=3 python -u run_network.py \
 --data_set ${DATA_SET} \
 --data_root ${DATA_ROOT} \
 --expt_name ${EXPT_NAME} \
---classifier_dropout 0.2 \
---mmc_dropout 0.2 \
+--mmc_sizes 128 128 128 128 \
 --model ${MODEL} > ${RESULTS_ROOT}/${EXPT_NAME}.log

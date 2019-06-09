@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+
 source scripts/common.sh
 cd ${PROJECT_ROOT}
 
@@ -15,7 +15,7 @@ DATA_ROOT=/hdd/robik/${DATA_SET}
 RESULTS_ROOT=/hdd/robik/${DATA_SET}_results
 mkdir -p ${RESULTS_ROOT}
 MODEL=Ramen
-EXPT_NAME=${MODEL}_${DATA_SET}
+EXPT_NAME=${MODEL}_${DATA_SET}_curriculum_dropout_0.5
 
 python -u run_network.py \
 --data_set ${DATA_SET} \
@@ -23,4 +23,7 @@ python -u run_network.py \
 --expt_name ${EXPT_NAME} \
 --model ${MODEL} \
 --spatial_feature_type mesh \
---spatial_feature_length 16 > ${RESULTS_ROOT}/${EXPT_NAME}.log
+--spatial_feature_length 16 \
+--mmc_dropout 0.5 \
+--use_curriculum_dropout \
+--h5_prefix use_split > ${RESULTS_ROOT}/${EXPT_NAME}.log
