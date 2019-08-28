@@ -80,7 +80,7 @@ def parse_args():
     # RN specific arguments
     parser.add_argument('--interactor_sizes', type=int, nargs='+', default=[512, 512, 512, 512])
     parser.add_argument('--aggregator_sizes', type=int, nargs='+', default=[512, 512])
-    parser.add_argument('--optimizer', type=str, default='Adam')
+    parser.add_argument('--optimizer', type=str, default='Adamax')
     parser.add_argument('--lr', type=float, default=5e-4)
     parser.add_argument('--lr_milestones', type=int, nargs='+', default=[])
     parser.add_argument('--words_dropout', type=float, default=0)
@@ -151,11 +151,12 @@ def train_model():
 
     args.w_emb_size = val_dset.dictionary.ntoken
     args.num_ans_candidates = val_dset.num_ans_candidates
+    args.dictionary = val_dset.dictionary
     args.v_dim = val_dset.v_dim
     model = getattr(models, args.model)(args)
 
     if args.apply_rubi:
-        rubi = RUBiNet(model, args.num_ans_candidates, {'input_dim': 2048, 'dimensions': [2048, 2048, 3000]})
+        rubi = RUBiNet(model, args.num_ans_candidates, {'input_dim': args.q_emb_dim, 'dimensions': [1024, 1024, 3000]})
         model = rubi.cuda()
     else:
         model = model.cuda()

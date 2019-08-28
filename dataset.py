@@ -65,6 +65,7 @@ class Dictionary(object):
 
     def __len__(self):
         return len(self.idx2word)
+        # return 100
 
 
 def _create_entry(img, question, answer):
@@ -318,4 +319,4 @@ class VQAFeatureDataset(Dataset):
 
     def __len__(self):
         return len(self.entries)
-        # return 100
+        # return 2500

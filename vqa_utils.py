@@ -67,7 +67,7 @@ class VqaUtils:
         return curr_entry
 
     @staticmethod
-    def save_stats(stats, per_type_metrics, all_preds, save_dir, split, epoch):
+    def save_stats(stats, per_type_metrics, all_preds, save_dir, split, epoch, suffix=''):
         VqaUtils.save_csv(stats, save_dir, stats_filename='overall_stats.csv')
         VqaUtils.save_csv(per_type_metrics, save_dir, stats_filename='per_type_stats.csv')
         with open(os.path.join(save_dir, 'overall_stats.json'), 'w') as of:
@@ -81,11 +81,11 @@ class VqaUtils:
             json.dump(all_preds, pred_f)
 
     @staticmethod
-    def save_preds(all_preds, save_dir, split, epoch):
+    def save_preds(all_preds, save_dir, split, epoch, suffix=''):
         pred_dir = os.path.join(save_dir, 'predictions')
         if not os.path.exists(pred_dir):
             os.mkdir(pred_dir)
-        with open(os.path.join(pred_dir, 'prediction_{}_epoch_{}.json'.format(split, epoch)), 'w') as pred_f:
+        with open(os.path.join(pred_dir, 'prediction_{}_epoch_{}_{}.json'.format(split, epoch, suffix)), 'w') as pred_f:
             json.dump(all_preds, pred_f)
 
     @staticmethod
