@@ -61,8 +61,8 @@ class MultiModalCore(nn.Module):
         # Aggregation
         if not self.config.disable_late_fusion:
             out_s += config.q_emb_dim
-            self.batch_norm_before_aggregation = nn.BatchNorm1d(out_s)
-        # self.aggregator_dropout = nn.Dropout(p=config.aggregator_dropout)
+            if not self.config.disable_batch_norm_for_late_fusion:
+                self.batch_norm_before_aggregation = nn.BatchNorm1d(out_s)
         self.aggregator = RNN(out_s, config.mmc_aggregator_dim, nlayers=config.mmc_aggregator_layers,
                               bidirect=True)
 
@@ -118,9 +118,10 @@ class MultiModalCore(nn.Module):
         if not self.config.disable_late_fusion:
             x = torch.cat((x, q), dim=2)
             curr_size = x.size()
-            x = x.view(-1, curr_size[2])
-            x = self.batch_norm_before_aggregation(x)
-            x = x.view(curr_size)
+            if not self.config.disable_batch_norm_for_late_fusion:
+                x = x.view(-1, curr_size[2])
+                x = self.batch_norm_before_aggregation(x)
+                x = x.view(curr_size)
             # x = self.aggregator_dropout(x)
             x_aggregated = self.aggregator(x)
 
