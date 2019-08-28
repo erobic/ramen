@@ -204,9 +204,7 @@ class VQAFeatureDataset(Dataset):
             spatials = hf['boxes']
         self.entries = _load_dataset(data_root, name, self.img_id2idx, self.label2ans)
         self.tokenize(args.token_length)
-        print("token length {}".format(args.token_length))
         self.tensorize()
-        print("self.features_path.size() {}".format(features.shape))
         self.v_dim = features.shape[1 if self.adaptive else 2] + VqaUtils.get_spatial_length(
             args.spatial_feature_type,
             args.spatial_feature_length)
