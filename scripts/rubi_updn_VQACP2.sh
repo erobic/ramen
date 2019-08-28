@@ -8,7 +8,7 @@ DATA_ROOT=/hdd/robik/${DATA_SET}
 
 # Create dictionary and compute GT answer scores
 #python preprocess/create_dictionary.py --data_root ${DATA_ROOT}
-#python preprocess/compute_softscore.py --data_root ${DATA_ROOT} --min_occurrence 9
+#python preprocess/compute_softscore.py --data_root ${DATA_ROOT} --top_k 3000
 
 # Train the model
 RESULTS_ROOT=/hdd/robik/${DATA_SET}_results

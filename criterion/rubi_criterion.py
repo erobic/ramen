@@ -23,6 +23,6 @@ class RUBiCriterion(nn.Module):
         loss = fusion_loss + self.question_loss_weight * question_loss
 
         out['loss'] = loss
-        out['loss_mm_q'] = fusion_loss
+        out['loss_rubi'] = fusion_loss
         out['loss_q'] = question_loss
         return out
