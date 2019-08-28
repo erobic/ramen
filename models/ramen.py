@@ -53,4 +53,5 @@ class Ramen(nn.Module):
             mmc_aggregated = self.pre_classification_dropout(mmc_aggregated)
         final_emb = self.pre_classification_layers(mmc_aggregated)
         logits = self.classifier(final_emb)
-        return logits
+        out = {'logits': logits, 'q_emb': q_emb}
+        return out

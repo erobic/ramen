@@ -164,11 +164,13 @@ class PerTypeMetric:
 
 
 def instance_bce_with_logits(preds, labels):
-    logits =preds['logits']
+    logits = preds['logits']
     assert logits.dim() == 2
     loss = nn.functional.binary_cross_entropy_with_logits(logits, labels)
     loss *= labels.size(1)
-    return loss
+    return {
+        'loss': loss
+    }
 
 
 def compute_score_with_logits(logits, labels):

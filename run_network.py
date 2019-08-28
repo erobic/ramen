@@ -10,6 +10,9 @@ from dataset import Dictionary, VQAFeatureDataset
 from models import models
 from train import train
 import math
+import vqa_utils
+from models.rubi import RUBiNet
+from criterion.rubi_criterion import RUBiCriterion
 
 
 def parse_args():
@@ -20,12 +23,13 @@ def parse_args():
 
     parser.add_argument('--do_not_normalize_image_feats', action='store_true')
 
-    parser.add_argument('--epochs', type=int, default=35)
+    parser.add_argument('--epochs', type=int, default=25)
     parser.add_argument('--num_hid', type=int, default=1024)
     parser.add_argument('--q_emb_dim', type=int, default=1024)
     parser.add_argument('--model', type=str, default='UpDn')
+    parser.add_argument('--apply_rubi', action='store_true')
     parser.add_argument('--batch_size', type=int, default=64)
-    parser.add_argument('--seed', type=int, default=42, help='random seed')
+    parser.add_argument('--seed', type=int, default=7, help='random seed')
     parser.add_argument('--answers_available', type=int, default=1, help='Are the answers available?')
     parser.add_argument('--mode', type=str, choices=['train', 'test'],
                         help='Checkpoint must be specified  for test mode', default='train')
@@ -55,6 +59,7 @@ def parse_args():
     parser.add_argument('--mmc_nonlinearity', default='Swish')
     parser.add_argument('--disable_early_fusion', action='store_true')
     parser.add_argument('--disable_late_fusion', action='store_true')
+    parser.add_argument('--disable_batch_norm_for_late_fusion', action='store_true')
     parser.add_argument('--mmc_connection', default='residual')
     parser.add_argument('--mmc_aggregator_layers', type=int, default=1)
     parser.add_argument('--mmc_aggregator_dim', type=int, default=1024)
@@ -65,6 +70,8 @@ def parse_args():
     parser.add_argument('--classifier_nonlinearity', type=str, default='Swish')
     parser.add_argument('--input_dropout', default=0, type=float)
     parser.add_argument('--mmc_dropout', default=0, type=float)
+    parser.add_argument('--question_dropout_before_rnn', default=None, type=float)
+    parser.add_argument('--question_dropout_after_rnn', default=None, type=float)
     parser.add_argument('--classifier_dropout', type=float, default=0.5)
 
     # BAN specific arguments
@@ -73,11 +80,11 @@ def parse_args():
     # RN specific arguments
     parser.add_argument('--interactor_sizes', type=int, nargs='+', default=[512, 512, 512, 512])
     parser.add_argument('--aggregator_sizes', type=int, nargs='+', default=[512, 512])
-    parser.add_argument('--optimizer', type=str, default='Adamax')
-    parser.add_argument('--lr', type=float, default=2e-3)
+    parser.add_argument('--optimizer', type=str, default='Adam')
+    parser.add_argument('--lr', type=float, default=5e-4)
     parser.add_argument('--lr_milestones', type=int, nargs='+', default=[])
-    parser.add_argument('--use_curriculum_dropout', action='store_true')
-    parser.add_argument('--curriculum_dropout_T', type=int)
+    parser.add_argument('--words_dropout', type=float, default=0)
+    parser.add_argument('--pre_classification_dropout', type=float, default=0)
 
     args = parser.parse_args()
 
@@ -104,13 +111,26 @@ def parse_args():
     if 'clevr' in args.data_set.lower():
         args.token_length = 45
     else:
-        args.token_length = 30
+        args.token_length = 14
 
     if args.dictionary_file is None:
         args.dictionary_file = args.vocab_dir + '/dictionary.pkl'
     if args.glove_file is None:
         args.glove_file = args.vocab_dir + '/glove6b_init_300d.npy'
     return args
+
+
+def instance_bce_with_logits(logits, labels):
+    """
+    Computes binary cross entropy loss
+    :param logits:
+    :param labels:
+    :return:
+    """
+    assert logits.dim() == 2
+    loss = nn.functional.binary_cross_entropy_with_logits(logits, labels)
+    loss *= labels.size(1)
+    return loss
 
 
 def load_bottom_up_dictionary(data_root, features_subdir):
@@ -122,18 +142,9 @@ def load_bottom_up_dictionary(data_root, features_subdir):
     return dictionary
 
 
-def init_curriculum_dropout(args, train_dset):
-    if args.use_curriculum_dropout:
-        train_dset_len = len(train_dset)
-        if args.curriculum_dropout_T is None:
-            args.curriculum_dropout_T = math.ceil(args.epochs * train_dset_len / args.batch_size)
-        args.curriculum_dropout_gamma = 10 / args.curriculum_dropout_T
-
-
 def train_model():
     if not args.test:
         train_dset = VQAFeatureDataset(args.train_split, dictionary, data_root=args.dataroot, args=args)
-        init_curriculum_dropout(args, train_dset)
     else:
         train_dset = None
     val_dset = VQAFeatureDataset(args.test_split, dictionary, data_root=args.dataroot, args=args)
@@ -143,7 +154,11 @@ def train_model():
     args.v_dim = val_dset.v_dim
     model = getattr(models, args.model)(args)
 
-    model = model.cuda()
+    if args.apply_rubi:
+        rubi = RUBiNet(model, args.num_ans_candidates, {'input_dim': 2048, 'dimensions': [2048, 2048, 3000]})
+        model = rubi.cuda()
+    else:
+        model = model.cuda()
     print("Our kickass model {}".format(model))
 
     optimizer = None
@@ -173,7 +188,11 @@ def train_model():
         train_loader = None
     eval_loader = DataLoader(val_dset, batch_size, shuffle=False, num_workers=16)
 
-    train(model, train_loader, eval_loader, args.epochs, optimizer, args, epoch, best_val_score, best_epoch)
+    if args.apply_rubi:
+        criterion = RUBiCriterion()
+    else:
+        criterion = vqa_utils.instance_bce_with_logits
+    train(model, train_loader, eval_loader, args.epochs, optimizer, criterion, args, epoch, best_val_score, best_epoch)
 
     if not args.test:
         train_dset.close_h5_file()
@@ -185,8 +204,8 @@ if __name__ == '__main__':
     print("Running experiment with these parameters:")
     print(json.dumps(vars(args), indent=4, sort_keys=True))
 
-    torch.manual_seed(args.seed)
-    torch.cuda.manual_seed(args.seed)
+    # torch.manual_seed(args.seed)
+    # torch.cuda.manual_seed(args.seed)
     torch.backends.cudnn.benchmark = True
 
     dictionary = Dictionary.load_from_file(args.dictionary_file)

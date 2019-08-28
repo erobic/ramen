@@ -22,13 +22,13 @@ class Metrics:
         self.upper_bound = 0
         self.reset_start_time()
 
-    def update_per_batch(self, model, answers, loss, pred, curr_size):
+    def update_per_batch(self, model, answers, loss, pred, curr_size, logits_key='logits'):
         upper_bound = answers.max(1)[0].sum()
         self.upper_bound += upper_bound
         # self.total_norm += nn.utils.clip_grad_norm_(model.parameters(), 0.25)
         # self.count_norm += 1
         from train import compute_score_with_logits
-        batch_score = compute_score_with_logits(pred, answers.data).sum()
+        batch_score = compute_score_with_logits(pred, answers.data, logits_key).sum()
         self.loss += loss.data * curr_size
         self.raw_score += batch_score
         self.num_examples += curr_size

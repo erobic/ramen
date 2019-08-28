@@ -35,7 +35,7 @@ class UpDnAttention(nn.Module):
         self.v_proj = FCNet([v_dim, num_hid])
         self.q_proj = FCNet([q_dim, num_hid])
         self.dropout = nn.Dropout(dropout)
-        self.linear = weight_norm(nn.Linear(q_dim, 1), dim=None)
+        self.linear = weight_norm(nn.Linear(num_hid, 1), dim=None)
 
     def forward(self, v, q):
         """

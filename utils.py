@@ -7,7 +7,6 @@ from PIL import Image
 import torch
 import torch.nn as nn
 
-
 EPS = 1e-7
 
 
@@ -16,7 +15,7 @@ def assert_eq(real, expected):
 
 
 def assert_array_eq(real, expected):
-    assert (np.abs(real-expected) < EPS).all(), \
+    assert (np.abs(real - expected) < EPS).all(), \
         '%s (true) vs %s (expected)' % (real, expected)
 
 
@@ -98,3 +97,22 @@ class Logger(object):
         self.log_file.write(msg + '\n')
         self.log_file.flush()
         print(msg)
+
+
+class GradMulConst(torch.autograd.Function):
+    """
+    This layer is used to create an adversarial loss.
+    """
+
+    @staticmethod
+    def forward(ctx, x, const):
+        ctx.const = const
+        return x.view_as(x)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        return grad_output * ctx.const, None
+
+
+def grad_mul_const(x, const):
+    return GradMulConst.apply(x, const)
