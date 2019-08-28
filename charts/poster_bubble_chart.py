@@ -6,9 +6,14 @@ from matplotlib.ticker import ScalarFormatter
 
 fig, ax = plt.subplots(figsize=(40, 18))
 
-natural_vs_synthetic = np.array([['Dataset/Algorithm', 'UpDn', 'QCG', 'BAN', 'MAC', 'RN', 'RAMEN'],
-                                 ['Natural Datasets', 3.8, 2.8, 5.6, 2, 1.4, 5.4],
-                                 ['Synthetic Datasets', 2, 1, 3, 6, 4, 5]])
+# natural_vs_synthetic = np.array([['Dataset/Algorithm', 'UpDn', 'QCG', 'BAN', 'MAC', 'RN', 'RAMEN'],
+#                                  ['Natural Datasets', 3.8, 2.8, 5.6, 2, 1.4, 5.4],
+#                                  ['Synthetic Datasets', 2, 1, 3, 6, 4, 5]])
+
+natural_vs_synthetic = np.array([['Dataset/Algorithm', 'UpDn', 'QCG', 'BAN', 'MAC', 'RN'],
+                                 ['Natural Datasets', 3.8, 2.8, 5.6, 2, 1.4],
+                                 ['Synthetic Datasets', 2, 1, 3, 6, 4]])
+
 # # create data
 # x = np.random.rand(5)
 # y = np.random.rand(5)
@@ -53,10 +58,10 @@ ax.grid(b=True, which='both', axis='both', linewidth=2, linestyle='-')
 # ax.set_ybound(50, 125)
 ax.set_ybound(0, 8)
 ax.set_xbound(0, 6)
-ax.set_xticks(range(1,7))
-ax.set_yticks(range(1,7))
-ax.set_xticklabels(range(6,0, -1))
-ax.set_yticklabels(range(6,0,-1))
+ax.set_xticks(range(2,7, 2))
+ax.set_yticks(range(2,7, 2))
+ax.set_xticklabels([])
+ax.set_yticklabels([])
 # ax.set_xticks([])
 # ax.set_yticks([])
 # ax.set_yticks([])
