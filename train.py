@@ -144,9 +144,9 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, criterion, arg
                 print("Best val score {} at epoch {}".format(best_val_score, best_val_epoch))
                 if args.apply_rubi:
                     print(
-                        f"##### Logits score: {val_metrics.score}"
+                        f"##### Logits score: {val_metrics.score} "
                         f"Logits_rubi score: {val_metrics_rubi.score} "
-                        f"Logits_q score: {val_metrics_q.score}")
+                        f"Logits_q score: {val_metrics_q.score} ####")
 
                 #print("Val per type scores {}".format(json.dumps(val_per_type_metric.get_json(), indent=4)))
 
@@ -195,7 +195,7 @@ def evaluate(model, dataloader, epoch, criterion, args, val_metrics, logits_key=
         pred = model(visual_features, boxes, question_features, None, question_lengths)
 
         if not args.test or not args.test_does_not_have_answers:
-            loss = criterion(pred, answers)
+            loss = criterion(pred, answers)['loss']
             val_metrics.update_per_batch(model, answers, loss, pred, visual_features.shape[0], logits_key=logits_key)
 
         pred_ans_ixs = pred[logits_key].max(1)[1]

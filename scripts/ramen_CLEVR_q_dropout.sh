@@ -15,7 +15,7 @@ DATA_ROOT=/hdd/robik/${DATA_SET}
 RESULTS_ROOT=/hdd/robik/${DATA_SET}_results
 mkdir -p ${RESULTS_ROOT}
 MODEL=Ramen
-EXPT_NAME=${MODEL}_${DATA_SET}
+EXPT_NAME=${MODEL}_${DATA_SET}_q_dropout_0.1
 
 python -u run_network.py \
 --data_set ${DATA_SET} \
@@ -24,6 +24,7 @@ python -u run_network.py \
 --model ${MODEL} \
 --spatial_feature_type mesh \
 --spatial_feature_length 16 \
+--question_dropout_after_rnn 0.1 \
 --h5_prefix use_split > ${RESULTS_ROOT}/${EXPT_NAME}.log
 
 #--words_dropout 0.5 \

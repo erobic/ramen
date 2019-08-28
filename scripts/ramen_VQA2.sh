@@ -23,4 +23,6 @@ python -u run_network.py \
 --model ${MODEL} \
 --train_split trainval \
 --test_split test_dev \
+--words_dropout 0.5 \
+--question_dropout_after_rnn 0.5 \
 --h5_prefix use_split > ${RESULTS_ROOT}/${EXPT_NAME}.log
