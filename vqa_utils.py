@@ -7,6 +7,7 @@ import copy
 import torch.nn as nn
 from six.moves import cPickle
 
+
 class VqaUtils:
 
     @staticmethod
@@ -36,7 +37,8 @@ class VqaUtils:
     def get_image_features(curr_image_features, curr_spatial_features, spatial_feature_type,
                            spatial_feature_length, num_objects):
         assert spatial_feature_type is None or spatial_feature_type in ['simple', 'linear',
-                                                                        'mesh', 'none'], "Unsupported spatial_feature_type {}".format(
+                                                                        'mesh',
+                                                                        'none'], "Unsupported spatial_feature_type {}".format(
             spatial_feature_type)
         if spatial_feature_type == 'none':
             return curr_image_features
@@ -49,7 +51,8 @@ class VqaUtils:
                                                                                 spatial_feature_length)
             linear_features_x = VqaUtils.normalize_features(linear_features_x)
             linear_features_y = VqaUtils.normalize_features(linear_features_y)
-            curr_entry = np.concatenate((VqaUtils.normalize_features(curr_image_features), linear_features_x, linear_features_y), axis=1)
+            curr_entry = np.concatenate(
+                (VqaUtils.normalize_features(curr_image_features), linear_features_x, linear_features_y), axis=1)
         elif spatial_feature_type == 'mesh':
             linear_features_x, linear_features_y = VqaUtils.get_linear_features(curr_spatial_features, num_objects,
                                                                                 spatial_feature_length)
@@ -109,7 +112,6 @@ class VqaUtils:
         else:
             return 0
 
-
     @staticmethod
     def get_question_type(full_question, use_clevr_style=False):
         if 'question_type' in full_question:
@@ -125,7 +127,7 @@ class PerTypeMetric:
         self.per_type_total = {}
         self.per_type_acc = {}
 
-    def update_with_pred(self, full_question, label, output,use_clevr_style):
+    def update_with_pred(self, full_question, label, output, use_clevr_style):
         if use_clevr_style:
             question_type = full_question['program'][-1]['function']
         else:
@@ -161,9 +163,9 @@ class PerTypeMetric:
         return data
 
 
-def instance_bce_with_logits(logits, labels):
+def instance_bce_with_logits(preds, labels):
+    logits =preds['logits']
     assert logits.dim() == 2
-
     loss = nn.functional.binary_cross_entropy_with_logits(logits, labels)
     loss *= labels.size(1)
     return loss
@@ -178,8 +180,8 @@ def compute_score_with_logits(logits, labels):
 
 
 def load_answer_scores(dataroot, split):
-    question_path = os.path.join(dataroot, 'questions', '%s_questions.json' %split)
-    questions = sorted(json.load(open(question_path))['questions'], key=lambda x:x['question_id'])
+    question_path = os.path.join(dataroot, 'questions', '%s_questions.json' % split)
+    questions = sorted(json.load(open(question_path))['questions'], key=lambda x: x['question_id'])
     entries = {}
     answer_path = os.path.join(dataroot, 'features', '%s_target.pkl' % split)
     answers = cPickle.load(open(answer_path, 'rb'))

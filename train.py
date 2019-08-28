@@ -11,26 +11,14 @@ from metrics import Metrics, accumulate_metrics
 import numpy as np
 
 
-def instance_bce_with_logits(logits, labels):
-    """
-    Computes binary cross entropy loss
-    :param logits:
-    :param labels:
-    :return:
-    """
-    assert logits.dim() == 2
-    loss = nn.functional.binary_cross_entropy_with_logits(logits, labels)
-    loss *= labels.size(1)
-    return loss
-
-
-def compute_score_with_logits(logits, labels):
+def compute_score_with_logits(preds, labels):
     """
     Computes softscores
     :param logits:
     :param labels:
     :return:
     """
+    logits = preds['logits']
     logits = torch.max(logits, 1)[1].data  # argmax
     one_hots = torch.zeros(*labels.size()).cuda()
     one_hots.scatter_(1, logits.view(-1, 1), 1)
@@ -58,15 +46,7 @@ def save_metrics_n_model(metrics, model, optimizer, args, is_best):
     return metrics_n_model
 
 
-def update_curriculum_dropout(args, model, iter_num):
-    curr_input_dropout = args.input_dropout * (1 - np.exp(-args.curriculum_dropout_gamma * iter_num))
-    curr_hidden_dropout = args.mmc_dropout * (1 - np.exp(-args.curriculum_dropout_gamma * iter_num))
-    curr_classifier_dropout = args.classifier_dropout * (1 - np.exp(-args.curriculum_dropout_gamma * iter_num))
-    model.update_dropouts(input_dropout_p=curr_input_dropout, hidden_dropout_p=curr_hidden_dropout,
-                          classifier_dropout_p=curr_classifier_dropout)
-
-
-def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_epoch=0, best_val_score=0,
+def train(model, train_loader, val_loader, num_epochs, optimizer, criterion, args, start_epoch=0, best_val_score=0,
           best_val_epoch=0):
     """
     This is the main training loop. It trains the model, evaluates the model and saves the metrics and predictions.
@@ -75,23 +55,28 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
     val_per_type_metric_list = []
 
     if optimizer is None:
-        # lr_decay_epochs = range(10, 15, lr_decay_step)
-        # gradual_warmup_steps = [0.5 * lr, 1.0 * lr, 1.5 * lr, 2.0 * lr]
+        lr_decay_step = 2
+        lr_decay_rate = .25
+        lr_decay_epochs = range(10, 25, lr_decay_step)
+        gradual_warmup_steps = [0.5 * args.lr, 1.0 * args.lr, 1.5 * args.lr, 2.0 * args.lr]
         optimizer = getattr(torch.optim, args.optimizer)(filter(lambda p: p.requires_grad, model.parameters()),
                                                          lr=args.lr)
-        # optimizer = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
 
     iter_num = 0
     if args.test and start_epoch == num_epochs:
         start_epoch = num_epochs - 1
     for epoch in range(start_epoch, num_epochs):
-        # if epoch < len(gradual_warmup_steps):
-        #     optimizer.param_groups[0]['lr'] = gradual_warmup_steps[epoch]
-        # elif epoch in lr_decay_epochs:
-        #     optimizer.param_groups[0]['lr'] *= lr_decay_rate
-        if epoch in args.lr_milestones:
-            optimizer.param_groups[0]['lr'] /= 10.
-            print(f"Lr {optimizer.param_groups[0]['lr']}")
+        if epoch < len(gradual_warmup_steps):
+            optimizer.param_groups[0]['lr'] = gradual_warmup_steps[epoch]
+        elif epoch in lr_decay_epochs:
+            optimizer.param_groups[0]['lr'] *= lr_decay_rate
+        else:
+            optimizer.param_groups[0]['lr'] = args.lr
+        print("lr {}".format(optimizer.param_groups[0]['lr']))
+
+        # if epoch in args.lr_milestones:
+        #     optimizer.param_groups[0]['lr'] /= 10.
+        #     print(f"Lr {optimizer.param_groups[0]['lr']}")
 
         is_best = False
         train_metrics, val_metrics = Metrics(), Metrics()
@@ -104,11 +89,8 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
                 question_features = Variable(question_features).cuda()
                 answers = Variable(answers).cuda()
 
-                if args.use_curriculum_dropout:
-                    update_curriculum_dropout(args, model, iter_num)
-
                 pred = model(visual_features, boxes, question_features, answers, question_lengths)
-                loss = instance_bce_with_logits(pred, answers)
+                loss = criterion(pred, answers)
                 loss.backward()
                 train_metrics.update_per_batch(model, answers, loss, pred, visual_features.shape[0])
                 nn.utils.clip_grad_norm_(model.parameters(), 50)
@@ -123,7 +105,7 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
             print("Starting the test ... ")
 
             model.train(False)
-            val_preds, val_per_type_metric = evaluate(model, val_loader, epoch, args, val_metrics)
+            val_preds, val_per_type_metric = evaluate(model, val_loader, epoch, criterion, args, val_metrics)
 
             model.train(True)
             if val_metrics.score > best_val_score:
@@ -154,7 +136,7 @@ def train(model, train_loader, val_loader, num_epochs, optimizer, args, start_ep
             break
 
 
-def evaluate(model, dataloader, epoch, args, val_metrics):
+def evaluate(model, dataloader, epoch, criterion, args, val_metrics):
     per_type_metric = PerTypeMetric(epoch=epoch)
     with open(os.path.join(args.data_root, args.feature_subdir, 'answer_ix_map.json')) as f:
         answer_ix_map = json.load(f)
@@ -173,7 +155,7 @@ def evaluate(model, dataloader, epoch, args, val_metrics):
         pred = model(visual_features, boxes, question_features, None, question_lengths)
 
         if not args.test or not args.test_does_not_have_answers:
-            loss = instance_bce_with_logits(pred, answers)
+            loss = criterion(pred, answers)
             val_metrics.update_per_batch(model, answers, loss, pred, visual_features.shape[0])
 
         pred_ans_ixs = pred.max(1)[1]
