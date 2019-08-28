@@ -13,7 +13,10 @@ class Ramen(nn.Module):
         self.mmc_net = MultiModalCore(config)
         self.w_emb = WordEmbedding(config.w_emb_size, 300)
         self.w_emb.init_embedding(config.glove_file)
-        self.q_emb = QuestionEmbedding(300, self.config.q_emb_dim, 1, bidirect=True, dropout=0, rnn_type=config.question_rnn_type)
+        self.q_emb = QuestionEmbedding(300, self.config.q_emb_dim, 1, bidirect=True, dropout=0,
+                                       rnn_type=config.question_rnn_type,
+                                       dropout_before_rnn=config.question_dropout_before_rnn,
+                                       dropout_after_rnn=config.question_dropout_after_rnn)
 
         clf_in_size = config.mmc_aggregator_dim * 2
         classifier_layers = []
@@ -25,6 +28,10 @@ class Ramen(nn.Module):
             classifier_layers.append(getattr(nonlinearity, config.classifier_nonlinearity)())
             classifier_layers.append(nn.Dropout(p=config.classifier_dropout))
 
+        if config.pre_classification_dropout is not None and config.pre_classification_dropout > 0:
+            self.pre_classification_dropout = nn.Dropout(p=config.pre_classification_dropout)
+        else:
+            self.pre_classification_dropout = None
         self.pre_classification_layers = nn.Sequential(*classifier_layers)
         self.classifier = nn.Linear(out_s, config.num_ans_candidates)
 
@@ -42,12 +49,8 @@ class Ramen(nn.Module):
         q = self.w_emb(q)
         q_emb = self.q_emb(q, qlen)
         mmc, mmc_aggregated = self.mmc_net(v, b, q_emb)  # B x num_objs x num_hid and B x num_hid
+        if self.pre_classification_dropout is not None:
+            mmc_aggregated = self.pre_classification_dropout(mmc_aggregated)
         final_emb = self.pre_classification_layers(mmc_aggregated)
         logits = self.classifier(final_emb)
         return logits
-
-    def update_dropouts(self, input_dropout_p=None, hidden_dropout_p=None, classifier_dropout_p=None):
-        self.mmc_net.update_dropouts(input_dropout_p, hidden_dropout_p)
-        for l in self.pre_classification_layers:
-            if isinstance(l, nn.Dropout):
-                l.p = classifier_dropout_p
