@@ -66,4 +66,4 @@ class Ban(nn.Module):
             q_emb = q_emb + self.c_prj[g](embed).unsqueeze(1)
 
         logits = self.classifier(q_emb.sum(1))
-        return {'logits': logits, 'q_emb': q_emb}
+        return {'logits': logits, 'q_emb': q_emb.sum(1)}

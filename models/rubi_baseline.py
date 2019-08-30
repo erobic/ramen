@@ -42,7 +42,7 @@ class RUBiBaseline(nn.Module):
         # self.self_q_att = self_q_att
         self.agg = {'type': 'max'}
         assert self.agg['type'] in ['max', 'mean']
-        self.classif = {'mlp': {'input_dim': 2048, 'dimensions': [1024, 1024, config.num_ans_candidates]}}
+        self.classif = {'mlp': {'input_dim': 2048, 'dimensions': [2048, 2048, config.num_ans_candidates]}}
         self.fusion = {
             'type': 'block',
             'input_dims': [config.q_emb_dim, 2048],

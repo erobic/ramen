@@ -156,7 +156,7 @@ def train_model():
     model = getattr(models, args.model)(args)
 
     if args.apply_rubi:
-        rubi = RUBiNet(model, args.num_ans_candidates, {'input_dim': args.q_emb_dim, 'dimensions': [1024, 1024, 3000]})
+        rubi = RUBiNet(model, args.num_ans_candidates, {'input_dim': args.q_emb_dim, 'dimensions': [2048, 2048, 3000]})
         model = rubi.cuda()
     else:
         model = model.cuda()

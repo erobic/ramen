@@ -14,7 +14,7 @@ DATA_ROOT=/hdd/robik/${DATA_SET}
 RESULTS_ROOT=/hdd/robik/${DATA_SET}_results
 mkdir -p ${RESULTS_ROOT}
 MODEL=UpDn
-EXPT_NAME=rubi_${MODEL}_${DATA_SET}
+EXPT_NAME=rubi_${MODEL}_${DATA_SET}_256
 
 CUDA_VISIBLE_DEVICES=1 python -u run_network.py \
 --data_set ${DATA_SET} \
@@ -25,9 +25,10 @@ CUDA_VISIBLE_DEVICES=1 python -u run_network.py \
 --q_emb_dim 2048 \
 --lr 0.0003 \
 --optimizer Adam \
+--batch_size 256 \
 --h5_prefix use_split > ${RESULTS_ROOT}/${EXPT_NAME}.log
 
-EXPT_NAME=${MODEL}_${DATA_SET}
+EXPT_NAME=${MODEL}_${DATA_SET}_256
 CUDA_VISIBLE_DEVICES=1 python -u run_network.py \
 --data_set ${DATA_SET} \
 --data_root ${DATA_ROOT} \
@@ -36,4 +37,5 @@ CUDA_VISIBLE_DEVICES=1 python -u run_network.py \
 --q_emb_dim 2048 \
 --lr 0.0003 \
 --optimizer Adam \
+--batch_size 256 \
 --h5_prefix use_split > ${RESULTS_ROOT}/${EXPT_NAME}.log
