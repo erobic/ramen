@@ -7,7 +7,7 @@ This is a pytorch implementation of our Recurrent Aggregation of Multimodal Embe
 
 ## Usage
 
-#### Setting up visual features for VQA2, CVQA, VQACP and TDIUC
+#### Setting up visual features for VQA2, CVQA and VQACP
 Let ```ROOT``` be the directory where all data/code/results will be placed. ```DATA_ROOT=${ROOT}/${DATASET}```, where ```DATASET``` has one of the following values: VQA, CVQA, VQACP or TDIUC 
 
 1. Download train+val features into ```${DATA_ROOT}``` [using this link](https://imagecaption.blob.core.windows.net/imagecaption/trainval_36.zip) so that you have this file: ```${DATA_ROOT}/trainval_36.zip```
