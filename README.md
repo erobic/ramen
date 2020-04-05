@@ -13,7 +13,6 @@ If you do need to run RUBi, please comment out the following two lines from `run
 ```
 from models.rubi import RUBiNet
 from criterion.rubi_criterion import RUBiCriterion
-
 ```
 
 
