@@ -7,6 +7,9 @@ This is a pytorch implementation of our Recurrent Aggregation of Multimodal Embe
 
 ## Usage
 
+#### Update (04/05/2020)
+I added support for [RUBi](https://github.com/cdancette/rubi.bootstrap.pytorch), which can wrap any VQA model and mitigate question biases. For this, we need to first install [block.bootstrap, by following the instructions in this repo.](https://github.com/Cadene/block.bootstrap.pytorch)
+
 #### Setting up visual features for VQA2, CVQA and VQACP
 Let ```ROOT``` be the directory where all data/code/results will be placed. ```DATA_ROOT=${ROOT}/${DATASET}```, where ```DATASET``` has one of the following values: VQA2, CVQA or VQACP 
 
